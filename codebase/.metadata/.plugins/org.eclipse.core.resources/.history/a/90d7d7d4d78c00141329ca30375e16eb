@@ -1,0 +1,54 @@
+package starlib.mln.infer;
+
+public class Test {
+
+	public static void main(String[] args) {
+		int K = 3;
+		int N = 2;
+
+		int[] n = new int[K + 1]; /* the maximum for each digit */
+		int[] g = new int[K + 1]; /* the Gray code */
+		int[] u = new int[K + 1]; /* +1 or −1 */
+
+		int[] functionAdresses = new int[3];  // Addresses corresponding to different functions
+		int[][] projectedFunctionMultipliers = {{0, 1, 2}, {1, 2, 0}, {2, 0, 1}};
+
+		for (int i = 0; i <= K; i++) {
+			g[i] = 0;
+			u[i] = 1;
+			n[i] = N;  // Domain size of each variables
+		}
+		
+		int flippedIndex, g_plus_u;
+		
+		flippedIndex = 0;
+
+		while (g[K] == 0) {
+			System.out.print("(");
+			for (int j = K - 1; j >= 0; j--)
+				System.out.print(g[j]);
+			System.out.print(")");
+			
+			for (int l = 0; l < functionAdresses.length; l++) {
+				System.out.print("\t" + functionAdresses[l]);
+			}
+			
+			System.out.println();
+			
+			flippedIndex = 0; /* enumerate next Gray code */
+			g_plus_u = g[0] + u[0];
+			while ((g_plus_u >= n[flippedIndex]) || (g_plus_u < 0)) {
+				u[flippedIndex] = -u[flippedIndex];
+				flippedIndex++;
+				g_plus_u = g[flippedIndex] + u[flippedIndex];
+			}
+			g[flippedIndex] = g_plus_u;
+
+			for (int l = 0; g[K] == 0 && l < functionAdresses.length; l++) {
+				functionAdresses[l] += projectedFunctionMultipliers[l][flippedIndex] * u[flippedIndex];
+			}
+			
+		}
+	}
+
+}

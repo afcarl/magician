@@ -1,0 +1,9 @@
+#domains
+dom1={1, ..., 10}
+
+#predicates
+R(dom1, dom1)
+
+#formulas
+( R(x, y) | R(y, z) |  R(x, z)) ::2
+( !R(x, y)) ::1

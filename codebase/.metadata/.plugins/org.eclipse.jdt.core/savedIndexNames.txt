@@ -1,0 +1,3 @@
+INDEX VERSION 1.126+/Users/somdeb/Work/GitRepos/magician/codebase/.metadata/.plugins/org.eclipse.jdt.core
+3795368748.index
+4038543353.index

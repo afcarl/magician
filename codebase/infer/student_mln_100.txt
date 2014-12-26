@@ -1,0 +1,13 @@
+#domains
+dom1={0, ..., 100}
+
+#predicates
+R(dom1, dom1)
+S(dom1, dom1)
+T(dom1, dom1)
+
+#formulas
+( R(t, c)) ::0.4
+( S(s, c)) ::0.65
+( !T(s, j)) ::0.1
+( !R(x, y) | !S(y, z) |  T(z, u)) ::0.75

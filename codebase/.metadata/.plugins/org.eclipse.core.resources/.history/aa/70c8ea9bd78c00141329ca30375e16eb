@@ -1,0 +1,181 @@
+package starlib.mln.infer;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import starlib.mln.core.Atom;
+import starlib.mln.core.MLN;
+import starlib.mln.core.WClause;
+import starlib.mln.efficient.store.ApproxJoinTreeBasedKB;
+import starlib.mln.efficient.store.GraphModBasedKB;
+import starlib.mln.util.Parser;
+
+public class ApproxMaxWalkSat extends EfficientMaxWalkSat {
+	
+	protected GraphModBasedKB approxBestSolution;
+	
+	protected double approxMinSum;
+
+	
+	private int synchroniztionInterval = 1000;
+
+	public ApproxMaxWalkSat(MLN mln_) {
+		super(mln_);
+	}
+	
+	protected void initGroundStore() {
+		groundStore = new ApproxJoinTreeBasedKB(mln);
+		unsatClauseWeight = new double[mln.clauses.size()];
+		
+		List<Integer> numberOfGroundings = new ArrayList<Integer>();
+		for (int i = 0; i < mln.symbols.size(); i++) {
+			numberOfGroundings.add(null);
+			symbolClauseMap.add(new ArrayList<Integer>());
+		}
+		
+		int maximumClauseSize = 0;
+		for (int i=0; i<mln.clauses.size(); i++) {
+			WClause clause = mln.clauses.get(i);
+			if(clause.atoms.size() > maximumClauseSize) {
+				maximumClauseSize = clause.atoms.size();
+			}
+			for (Atom atom : clause.atoms) {
+				Integer savedNumberOfGrounding = numberOfGroundings.get(atom.symbol.id);
+				int atomsNumberOfGrounding = atom.getNumberOfGroundings();
+				assert(savedNumberOfGrounding == null || savedNumberOfGrounding.equals(atomsNumberOfGrounding));
+				numberOfGroundings.set(atom.symbol.id, atomsNumberOfGrounding);
+				
+				symbolClauseMap.get(atom.symbol.id).add(i);
+			}
+		}
+		
+		groundStore.init();
+		groundClause = new ArrayList<>(maximumClauseSize + 1);
+	}
+	
+	@Override
+	public void run() {
+		long clockStartTime = System.currentTimeMillis();
+		long lastPrintTime = clockStartTime;
+		
+		setRandomState();
+		this.updateUnsatStat();
+		
+		minSum = Double.MAX_VALUE;
+		approxMinSum = Double.MAX_VALUE;
+		int step = 1;
+
+		// run of the algorithm until condition of termination is reached
+		bestSolution = groundStore.clone();
+		approxBestSolution = groundStore.clone();
+		
+		while (step < maxSteps && unsSum > 0) {
+
+			// choose between greedy step and random step
+			if (random.nextDouble() < p) 
+				greedyMove();
+			else
+				stochasticMove();
+			
+			step++;
+
+			// if there is another new minimal unsatisfied value
+			if (unsSum < approxMinSum){
+				approxMinSum = unsSum;
+				approxBestSolution = groundStore.clone();
+			}
+			
+			if(step%50 == 0) {
+				long currentTime = System.currentTimeMillis();
+				
+				if(step%synchroniztionInterval == 0) {
+					this.synchronizeStore();
+				}
+				
+				if(currentTime - lastPrintTime > 1000*printInterval) {
+					lastPrintTime = currentTime;
+					System.out.println(minSum);
+				}
+				
+				if(currentTime - clockStartTime > timeOut) {
+					System.out.println("Time out reached!!!");
+					break;
+				}
+			}
+
+		}
+		System.out.println("Solution found after " + step + " steps.");
+	}
+	
+	private void synchronizeStore() {
+		// Make a copy of current assignment
+		GraphModBasedKB cuurentAssignment = groundStore.clone();
+		
+		// Revert back to last approximate best solution
+		groundStore.setAssignment(approxBestSolution);
+		// And compute the weights exactly
+		this.updateUnsatStat();
+		
+		// If the state improves from the last synchronization update exact values
+		if (unsSum < minSum){
+			minSum = unsSum;
+			bestSolution = groundStore.clone();
+		}
+
+		// Restore to current assignment and re-calibrate everything
+		groundStore.setAssignment(cuurentAssignment);
+		this.updateUnsatStat();
+	}
+
+	public static void main(String[] args) throws IOException {
+		
+		int noOfRun = 5;
+		
+		List<String> domainList = new ArrayList<String>();
+		domainList.add("10");
+		
+		for (String domainSize : domainList) {
+			
+			String fileName = "love_mln_int_" + domainSize +".txt" ;
+			
+			System.out.println();
+			for (int i = 0; i < noOfRun; i++) {
+				System.out.println("Run " + (i+1) +" for file "+fileName );
+				runFor(fileName);
+			}
+			System.out.println();
+			
+		}
+		
+	}
+	
+	public static List<Double> runFor(String mlnFile) throws FileNotFoundException {
+		long time = System.currentTimeMillis();
+		
+		MLN mln = new MLN();
+		Parser parser = new Parser(mln);
+		parser.parseInputMLNFile(mlnFile);
+		
+		print = false;
+
+		if(print)
+			System.out.println("Time to parse = " + (System.currentTimeMillis() - time) + " ms");
+		
+		time = System.currentTimeMillis();
+		EfficientMaxWalkSat slsAlgo = new ApproxMaxWalkSat(mln);
+		long timeOut = 102*1000 - (System.currentTimeMillis() - time);
+		System.out.println("Time out amount is "+ timeOut +" ms.");
+		slsAlgo.printInterval = 10;
+		slsAlgo.timeOut = (int) timeOut;
+		slsAlgo.run();
+		
+		
+		System.out.println();
+		System.out.println("Best cost found = "+slsAlgo.minSum);
+		
+		return null;
+		
+	}
+}
