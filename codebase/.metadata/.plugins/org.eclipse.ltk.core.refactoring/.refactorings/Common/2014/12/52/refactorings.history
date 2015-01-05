@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename package &apos;starlib.utility&apos; to &apos;starlib.util&apos;&#x0A;- Original project: &apos;Common&apos;&#x0A;- Original element: &apos;Common/src/starlib.utility&apos;&#x0A;- Renamed element: &apos;Common/src/starlib.util&apos;&#x0A;- Update references to refactored element&#x0A;- Update textual occurrences in comments and strings" description="Rename package &apos;starlib.utility&apos;" flags="589830" hierarchical="false" id="org.eclipse.jdt.ui.rename.package" input="/src&lt;starlib.utility" name="starlib.util" qualified="false" references="true" stamp="1419581969673" textual="false" version="1.0"/>
-</session>
