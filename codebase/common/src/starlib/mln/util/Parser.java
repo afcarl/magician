@@ -372,7 +372,7 @@ public class Parser {
 
 		scanner.close();
 	}
-
+	
 	public void parseDbFile(String filename) throws FileNotFoundException
 	{
 		Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(new FileInputStream(filename))));
