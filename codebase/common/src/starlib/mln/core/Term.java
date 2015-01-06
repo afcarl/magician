@@ -20,7 +20,7 @@ public class Term {
 	public Term(int type_, int value) {
 		type = type_;
 		domain = new ArrayList<Integer>(1);
-		domain.set(0, value);
+		domain.add(value);
 	}
 
 	Term(Term term) {

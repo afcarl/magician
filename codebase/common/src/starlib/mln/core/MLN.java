@@ -13,6 +13,8 @@ public class MLN {
 	public List<WClause> clauses = new ArrayList<WClause>();
 	public List<Formula> formulas = new ArrayList<Formula>();
 
+	public List<WClause> evidence = new ArrayList<WClause>();
+	
 	public static WClause create_new_clause(WClause clause) {
 
 		WClause new_clause = new WClause();

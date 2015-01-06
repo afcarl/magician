@@ -37,6 +37,8 @@ public class Parser {
 	public static final String EQUALSTO = "=";
 	public static final String ELLIPSIS = "...";
 	
+	public static final String EMPTY = "";
+	
 	private static final String REGEX_ESCAPE_CHAR = "\\";
 
 	private enum ParserState {
@@ -63,7 +65,7 @@ public class Parser {
 	boolean isTermConstant(String term)
 	{
 		//if starts with a capital letter or number, it is taken as a constant
-		return Character.isUpperCase(term.charAt(0));
+		return (Character.isUpperCase(term.charAt(0)) || Character.isDigit(term.charAt(0))) ;
 	}
 
 	Term create_new_term(int domainSize)
@@ -268,7 +270,7 @@ public class Parser {
 		String[] domainArr = line.split(EQUALSTO);
 		String domainName = domainArr[0];
 
-		String[] domValArr = domainArr[1].replace(LEFTFLOWER, "").replace(RIGHTFLOWER, "").split(COMMASEPARATOR);
+		String[] domValArr = domainArr[1].replace(LEFTFLOWER, EMPTY).replace(RIGHTFLOWER, EMPTY).split(COMMASEPARATOR);
 		List<String> domainValues = new ArrayList<String>();
 		for (int i = 0; i < domValArr.length; i++) {
 			if(domValArr[i].equals(ELLIPSIS)) {
@@ -290,7 +292,7 @@ public class Parser {
 	{
 		String[] predArr = line.split(REGEX_ESCAPE_CHAR + LEFTPRNTH);
 		String symbolName = predArr[0];
-		String[] termNames = predArr[1].replace(RIGHTPRNTH, "").split(COMMASEPARATOR);
+		String[] termNames = predArr[1].replace(RIGHTPRNTH, EMPTY).split(COMMASEPARATOR);
 
 		List<Integer> var_types = new ArrayList<Integer>(termNames.length);
 		for(int m=0; m < termNames.length; m++) {
@@ -333,7 +335,7 @@ public class Parser {
 		ParserState state = null;
 
 		while(scanner.hasNextLine()) {
-			String line = scanner.nextLine().replaceAll("\\s","");
+			String line = scanner.nextLine().replaceAll("\\s",EMPTY);
 
 			if(line.isEmpty()) {
 				continue;
@@ -369,5 +371,111 @@ public class Parser {
 		}
 
 		scanner.close();
+	}
+	
+	public void parseDbFile(String filename) throws FileNotFoundException
+	{
+		Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(new FileInputStream(filename))));
+
+		while(scanner.hasNextLine()) {
+			String line = scanner.nextLine().replaceAll("\\s",EMPTY);
+
+			if(line.isEmpty()) {
+				continue;
+			}
+
+			String[] predArr = line.split(REGEX_ESCAPE_CHAR + LEFTPRNTH);
+			String signedSymbol = predArr[0];
+			String[] terms = predArr[1].replace(RIGHTPRNTH, EMPTY).split(COMMASEPARATOR);
+			
+			boolean sign = signedSymbol.startsWith(NOTOPERATOR);
+			String predicateName = signedSymbol.replace(NOTOPERATOR, EMPTY);
+			
+			int predicateSymbolIndex = -1;
+			for (int i = 0; i < mln.symbols.size(); i++) {
+				//found the predicate
+				if(mln.symbols.get(i).symbol.equals(predicateName)) {
+					predicateSymbolIndex = i;
+					break;
+				}
+			}
+			
+			if(predicateSymbolIndex < 0) {
+				System.out.println("Error! Predicate in DB file not found: "  + predicateName );
+				System.exit(-1);
+			}
+
+			if(terms.length > mln.symbols.get(predicateSymbolIndex).variable_types.size()) {
+				System.out.println("Error! Wrong terms in Predicate in DB file: "  + predicateName );
+				System.exit(-1);
+			}
+			
+			// Check each terms Validity
+			List<Integer> matchedIndexList = new ArrayList<>(terms.length);
+			boolean invalid = false;
+			
+			if(terms.length != predicateDomainMap.get(predicateSymbolIndex).size())
+				invalid = true;
+			else {
+				for(int i=0;i<predicateDomainMap.get(predicateSymbolIndex).size();i++)
+				{
+					if(!isTermConstant(terms[i]))
+					{
+						System.out.println("Error! should enter constants in DB file: "+terms[i]);
+						System.exit(-1);
+					}
+					int domainIndex = predicateDomainMap.get(predicateSymbolIndex).get(i);
+					boolean found = false;
+					for(int j=0; j < domainList.get(domainIndex).values.size();j++)
+					{
+						if(domainList.get(domainIndex).values.get(j).equals(terms[i]))
+						{
+							found = true;
+							matchedIndexList.add(j);
+						}
+					}
+					if(!found){
+						invalid = true;
+						break;
+					}
+				}
+			}
+			
+			if(invalid) {
+				System.out.println("Error! Wrong value of term in Predicate in DB file: "  + predicateName );
+				System.exit(-1);
+			}
+				
+			List<Term> termList = new ArrayList<>(matchedIndexList.size());
+			for(int i=0; i < matchedIndexList.size(); i++)
+			{
+				Term term = new Term(0, matchedIndexList.get(i));
+				termList.add(term);
+			}
+			
+			Atom atom = new Atom(MLN.create_new_symbol(mln.symbols.get(predicateSymbolIndex)), termList);
+			WClause newClause = new WClause();
+			newClause.atoms.add(atom);
+			newClause.satisfied = false;
+			newClause.sign.add(sign);
+			newClause.weight =  LogDouble.ZERO;
+			
+			mln.evidence.add(newClause);
+		}
+		
+		scanner.close();
+	}
+	
+	public static void main(String[] args) throws FileNotFoundException {
+		
+		String mlnFile = "love_mln.txt";
+		String dbFile = "love_mln_db.txt";
+		
+		MLN mln = new MLN();
+		Parser parser = new Parser(mln);
+		parser.parseInputMLNFile(mlnFile);
+		parser.parseDbFile(dbFile);
+		
+		System.out.println(mln.evidence);
 	}
 }
