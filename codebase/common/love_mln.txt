@@ -1,0 +1,13 @@
+#domains
+dom1={0, ..., 2}
+
+#predicates
+Loves(dom1, dom1)
+Friends(dom1, dom1)
+Hates(dom1, dom1)
+
+#formulas
+( Loves(t, c)) ::3
+( Friends(s, c)) ::1
+( !Hates(s, j)) ::5
+( !Loves(x, y) | !Friends(y, z) |  Hates(x, z)) ::2
