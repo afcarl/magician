@@ -11,11 +11,11 @@ import starlib.mln.core.MLN;
 import starlib.mln.core.PredicateSymbol;
 import starlib.mln.core.Term;
 import starlib.mln.core.WClause;
-import starlib.mln.efficient.store.internal.CompiledStructure;
-import starlib.mln.efficient.store.internal.GlobalContext;
-import starlib.mln.efficient.store.internal.IntFunction;
-import starlib.mln.efficient.store.internal.IntGraphMod;
-import starlib.mln.efficient.store.internal.jt.JoinTreeInt;
+import starlib.mln.infer.store.internal.CompiledStructure;
+import starlib.mln.infer.store.internal.GlobalContext;
+import starlib.mln.infer.store.internal.IntFunction;
+import starlib.mln.infer.store.internal.IntGraphMod;
+import starlib.mln.infer.store.internal.jt.JoinTreeInt;
 
 public class GraphModBasedKB {
 	
