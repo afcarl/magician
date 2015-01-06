@@ -372,7 +372,7 @@ public class Parser {
 
 		scanner.close();
 	}
-	
+
 	public void parseDbFile(String filename) throws FileNotFoundException
 	{
 		Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(new FileInputStream(filename))));
@@ -465,7 +465,7 @@ public class Parser {
 		
 		scanner.close();
 	}
-	
+
 	public static void main(String[] args) throws FileNotFoundException {
 		
 		String mlnFile = "love_mln.txt";
