@@ -19,6 +19,13 @@ public class WClause {
 		satisfied = (false);
 	}
 	
+	public WClause(WClause that) {
+		for (Atom a : that.atoms) atoms.add(a);
+		for (Boolean b : that.sign) sign.add(b);
+		weight = that.weight;
+		satisfied = that.satisfied;
+	}
+	
 	public boolean valid(){
 		for(int i=0;i<atoms.size();i++){
 			for(int j=0;j<atoms.get(i).terms.size();j++){

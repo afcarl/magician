@@ -1,0 +1,8 @@
+Loves(0, 1)
+Friends(1, 2)
+Hates(0, 2)
+
+!Hates(0, 0)
+!Hates(1, 1)
+!Hates(2, 2)
+
