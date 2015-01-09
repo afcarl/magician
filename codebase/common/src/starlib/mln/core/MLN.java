@@ -64,9 +64,6 @@ public class MLN {
 				new_clause.atoms.get(i).terms.add(newTerms.get(ind));
 				ind++;
 			}
-			
-			// Link clause/formula to current atom
-			new_clause.atoms.get(i).formula_list.add(new_clause);
 		}
 		return new_clause;
 	}
