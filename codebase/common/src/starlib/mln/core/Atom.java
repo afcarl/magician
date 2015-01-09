@@ -21,6 +21,7 @@ public class Atom {
 
 	public Atom(Atom atom) {
 		symbol = atom.symbol;
+		terms = new ArrayList<Term>();
 		for (int i = 0; i < atom.terms.size(); i++) {
 			Term tm = new Term(atom.terms.get(i));
 			terms.add(tm);

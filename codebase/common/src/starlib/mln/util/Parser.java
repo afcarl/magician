@@ -477,5 +477,22 @@ public class Parser {
 		parser.parseDbFile(dbFile);
 		
 		System.out.println(mln.evidence);
+		
+		// Test parsing
+		System.out.println("Predicates:");
+		for (PredicateSymbol s : mln.symbols) {
+			System.out.println(s);
+		}
+
+		System.out.println();
+		System.out.println("Formulas:");
+		for (WClause wc : mln.clauses) {
+			wc.print();
+		}
+		
+		System.out.println();
+		for (WClause e : mln.evidence) {
+			e.print();
+		}
 	}
 }
