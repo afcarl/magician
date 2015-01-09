@@ -7,23 +7,35 @@ public class Atom {
 	public PredicateSymbol symbol;
 	// terms may be shared across atoms
 	public List<Term> terms;
+	
+	// A list of formulas containing this atom
+	public List<WClause> formula_list;
 
 	// Conditions: terms.size()=symbol.variables.size() and
 	// terms[i].type=symbol.variables[i]
 	public Atom() {
 		terms = new ArrayList<Term>();
+		formula_list = new ArrayList<WClause>();
 	}
 
 	public Atom(PredicateSymbol symbol_, List<Term> terms_) {
 		symbol = (symbol_);
 		terms = (terms_);
+		formula_list = new ArrayList<WClause>();
 	}
 
 	public Atom(Atom atom) {
 		symbol = atom.symbol;
+		terms = new ArrayList<Term>();
 		for (int i = 0; i < atom.terms.size(); i++) {
 			Term tm = new Term(atom.terms.get(i));
 			terms.add(tm);
+		}
+
+		formula_list = new ArrayList<WClause>();
+		for (int i = 0; i < atom.formula_list.size(); i++) {
+			WClause formula = new WClause(atom.formula_list.get(i));
+			formula_list.add(formula);
 		}
 	}
 
