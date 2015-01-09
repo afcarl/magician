@@ -26,12 +26,11 @@ public class GenerativeLearningTest {
 	static Hashtable<String, Integer> true_grouding_count = new Hashtable<String, Integer>();
 
 	/** Return the unnormalized probability associated with the original world */
-	private double unnormalizedOriginalProb(MLN mln, Atom atom) {
-		double exponent = 0;
+	private static LogDouble unnormalizedOriginalProb(MLN mln, Atom atom) {
+		LogDouble exp = new LogDouble(0d, true);
 		
 		// Create a list of formula containing current atom
 		List<WClause> formula_list = new ArrayList<WClause>();
-		
 		for (WClause formula : mln.clauses) {
 			for (Atom atom_flag : formula.atoms) {
 				if (atom_flag.symbol.parentId == atom.symbol.parentId) {
@@ -43,16 +42,25 @@ public class GenerativeLearningTest {
 		
 		// Loop through the list
 		for (WClause formula : formula_list)
-			exponent += true_grouding_count.get(formula.toString()) * formula.weight;
-		return Math.exp(exponent);
+			exp = exp.multiply(formula.weight.power(true_grouding_count.get(formula.toString())));
+		return exp;
+	}
+
+	/** Return the unnormalized probability associated with the world with 
+	 * 	the given ground atom flipped */
+	private static LogDouble unnormalizedFlippedProb(MLN mln, GroundAtom ga) {
+		return new LogDouble(-1d);
 	}
 	
 	/** Compute and cache all the required true grounding counts with each ground atom flipped */
-	private void computeCounts(MLN mln) {
+	private static void computeCounts(MLN mln) {
 		for (WClause formula : mln.clauses) {
 			true_grouding_count.put(formula.toString(), noOfTrueGroundings(formula));
-			for (Atom atom : formula.atoms)
+			for (Atom atom : formula.atoms) {
+				flipAtom(atom.symbol, term_values);
 				true_grouding_count.put(f.toString() + ga.toString(), noOfTrueGroundings(f/ga, flipped(ga)));
+				unflipAtom(atom.symbol, term_values);
+			}
 		}
 	}
 	
@@ -61,10 +69,22 @@ public class GenerativeLearningTest {
 //		while (true) {
 			for (WClause formula : mln.clauses) {
 				double delta = 0;
-//				int original_count = true_grouding_count.get(formula.toString());
+				int original_count = true_grouding_count.get(formula.toString());
 				
 				for (Atom a : formula.atoms) {
+					LogDouble original_prob = unnormalizedOriginalProb(mln, a);
+					
+					for (GroundAtom ga : a) {
+						int flipped_count = true_grouding_count.get(formula.toString() + ga.toString());
+						LogDouble flipped_prob = unnormalizedOriginalProb(mln, ga);
+
+						delta = original_count - ((original_prob.multiply(new LogDouble(original_count * 1.0))
+								.add(flipped_prob.multiply(new LogDouble(flipped_count * 1.0))))
+								.divide(original_prob.add(flipped_prob))).getValue();
+					}
 				}
+				
+				formula.weight += delta;
 				
 //				for ga : formula.groundAtoms {
 //					int flipped_count = true_grouding_count.get(f.toString() + ga.toString());
@@ -100,8 +120,6 @@ public class GenerativeLearningTest {
 			System.out.println(wc.weight);
 			for (Atom atom : wc.atoms) {
 				System.out.println(atom.symbol);
-				// TODO: add WClause to formula_list while parsing
-				System.out.println(atom.formula_list.size());
 			}
 			System.out.println();
 		}
