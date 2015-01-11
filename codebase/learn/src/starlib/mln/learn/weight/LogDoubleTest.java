@@ -5,7 +5,7 @@ import starlib.gm.core.LogDouble;
 public class LogDoubleTest {
 	public static void main(String[] args) {
 		// Simple tests
-		LogDouble a = new LogDouble(5d), b = new LogDouble(7d);
+		LogDouble a = new LogDouble(5d), b = new LogDouble(7d, true);
 		System.out.printf("%.2f\n", a.getValue());
 		System.out.printf("%.2f\n", b.getValue());
 		System.out.println();

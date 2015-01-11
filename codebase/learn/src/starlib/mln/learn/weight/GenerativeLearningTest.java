@@ -84,21 +84,14 @@ public class GenerativeLearningTest {
 					}
 				}
 				
-				formula.weight += delta;
-				
-//				for ga : formula.groundAtoms {
-//					int flipped_count = true_grouding_count.get(f.toString() + ga.toString());
-//					double prob1 = unnormalizedOriginalProb(world, ga);
-//					double prob2 = unnormalizedFlippedProb(world, ga);
-//					delta += original_count - (original_count * prob1 + flipped_count * prob2) / (prob1 + prob2);
-//				}
 //				formula.weight += delta;
+				formula.weight = new LogDouble(formula.weight.getLogValue() + delta, true);
 			}
 //		}
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException {
-		/** Parse the MLN file and the DB file into an MLN object*/
+		// Parse the MLN file and the DB file into an MLN object
 		String mlnFile = "love_mln.txt";
 		String dbFile = "love_mln_db.txt";
 		
