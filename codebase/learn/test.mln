@@ -1,0 +1,13 @@
+#domains
+dom1={0, ..., 1}
+
+#predicates
+A(dom1, dom1)
+B(dom1, dom1)
+C(dom1, dom1)
+
+#formulas
+( B(t, c)) ::3
+( A(s, c)) ::1
+( !C(s, j)) ::5
+( !B(t, c) | !A(s, c) |  C(s, j)) ::2
