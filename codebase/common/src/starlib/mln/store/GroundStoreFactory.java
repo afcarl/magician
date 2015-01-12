@@ -30,13 +30,4 @@ public class GroundStoreFactory {
 		return createGraphModBasedGroundStore(mlnFile, null);
 	}
 	
-	public static void main(String[] args) throws FileNotFoundException {
-		String mlnFile = "love_mln.txt";
-		String dbFile = "love_mln_db.txt";
-
-		GroundStore gs = createGraphModBasedGroundStore(mlnFile, dbFile);
-		
-		System.out.println();
-	}
-
 }
