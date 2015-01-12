@@ -41,7 +41,7 @@ public class IntFunction {
 		
 		int tableSize = this.getFunctionSize();
 		table = new double[tableSize];
-		Arrays.fill(table, 1.0);
+//		Arrays.fill(table, 1.0);
 	}
 	
 	public IntFunction sharedCopy() {

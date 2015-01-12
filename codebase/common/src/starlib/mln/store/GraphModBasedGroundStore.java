@@ -215,7 +215,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 			int atomId = this.getGroundAtomId(symbol, termConstatnts);
 			
 			// A zero Evidence Value in the store represents a positive evidence in the file 
-			double evidenceValue = evidence.sign.get(0) ? 1 : 0;
+			double evidenceValue = evidence.sign.get(0) ? 0 : 1;
 			
 			graphicalModel.getFunctions().get(symbol.id).setTableEntry(evidenceValue, atomId);
 
