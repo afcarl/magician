@@ -1,10 +1,10 @@
-package starlib.mln.infer.store.internal.jt;
+package starlib.mln.store.internal.jt;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import starlib.gm.core.Variable;
-import starlib.mln.infer.store.internal.IntFunction;
+import starlib.mln.store.internal.IntFunction;
 
 public abstract class JGEdgeInt {
 	protected JGNodeInt node1_;

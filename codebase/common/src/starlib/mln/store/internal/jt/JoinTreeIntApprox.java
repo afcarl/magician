@@ -1,8 +1,8 @@
-package starlib.mln.infer.store.internal.jt;
+package starlib.mln.store.internal.jt;
 
 import java.util.List;
 
-import starlib.mln.infer.store.internal.IntFunction;
+import starlib.mln.store.internal.IntFunction;
 
 public class JoinTreeIntApprox extends JoinTreeInt {
 	

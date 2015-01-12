@@ -1,4 +1,4 @@
-package starlib.mln.infer.store.internal.be;
+package starlib.mln.store.internal.be;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -8,10 +8,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import starlib.gm.core.Variable;
-import starlib.mln.infer.store.internal.CompiledStructure;
-import starlib.mln.infer.store.internal.GlobalContext;
-import starlib.mln.infer.store.internal.IntFunction;
-import starlib.mln.infer.store.internal.MinDegreeHeuristic;
+import starlib.mln.store.internal.CompiledStructure;
+import starlib.mln.store.internal.GlobalContext;
+import starlib.mln.store.internal.IntFunction;
+import starlib.mln.store.internal.MinDegreeHeuristic;
 
 public class BucketTreeInt implements CompiledStructure {
 

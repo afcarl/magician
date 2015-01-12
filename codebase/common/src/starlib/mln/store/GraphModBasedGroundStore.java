@@ -1,4 +1,4 @@
-package starlib.mln.infer.store;
+package starlib.mln.store;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,13 +11,13 @@ import starlib.mln.core.MLN;
 import starlib.mln.core.PredicateSymbol;
 import starlib.mln.core.Term;
 import starlib.mln.core.WClause;
-import starlib.mln.infer.store.internal.CompiledStructure;
-import starlib.mln.infer.store.internal.GlobalContext;
-import starlib.mln.infer.store.internal.IntFunction;
-import starlib.mln.infer.store.internal.IntGraphMod;
-import starlib.mln.infer.store.internal.jt.JoinTreeInt;
+import starlib.mln.store.internal.CompiledStructure;
+import starlib.mln.store.internal.GlobalContext;
+import starlib.mln.store.internal.IntFunction;
+import starlib.mln.store.internal.IntGraphMod;
+import starlib.mln.store.internal.jt.JoinTreeInt;
 
-public class GraphModBasedKB {
+public class GraphModBasedGroundStore implements GroundStore {
 	
 	protected static final int UNDEFINED = -1;
 	
@@ -53,10 +53,16 @@ public class GraphModBasedKB {
 	protected final int PARAM_REJECTION_TRY = 3;   
 	
 	
-	public GraphModBasedKB(MLN mln) {
+	public GraphModBasedGroundStore(MLN mln) {
 		this.mln = mln;
 	}
 	
+	@Override
+	public MLN getMln() {
+		return mln;
+	}
+	
+	@Override
 	public void init() {
 		joinTrees = new CompiledStructure[mln.clauses.size()];
 		satCounts = new double[mln.clauses.size()];
@@ -162,6 +168,7 @@ public class GraphModBasedKB {
 		GlobalContext.init(mln.clauses.size());
 		
 		this.setUpInternalClauseStore();
+		this.incoporateEvidence();
 	}
 	
 	/**
@@ -190,11 +197,53 @@ public class GraphModBasedKB {
 	}
 	
 	/**
+	 * Incorporate the already present evidence in the MLN file
+	 */
+	protected void incoporateEvidence() {
+		
+		for (int i=0; i<mln.evidence.size(); i++) {
+			WClause evidence = mln.evidence.get(i);
+			
+			// Each evidence is a Unit clause
+			Atom evidencAtom = evidence.atoms.get(0);
+			List<Integer> termConstatnts = new ArrayList<>(evidencAtom.terms.size());
+			for (Term term : evidencAtom.terms) {
+				termConstatnts.add(term.domain.get(0)); // Each terms domain is only a constant
+			}
+			
+			PredicateSymbol symbol = evidencAtom.symbol;
+			int atomId = this.getGroundAtomId(symbol, termConstatnts);
+			
+			// A zero Evidence Value in the store represents a positive evidence in the file 
+			double evidenceValue = evidence.sign.get(0) ? 1 : 0;
+			
+			graphicalModel.getFunctions().get(symbol.id).setTableEntry(evidenceValue, atomId);
+
+		}
+		
+	}
+	
+	/**
+	 * Get the ground atom id of a Predicate given assignment to its terms
+	 * 
+	 * @param symbol
+	 * @param termConstatnts
+	 * @return
+	 */
+	@Override
+	public int getGroundAtomId(PredicateSymbol symbol, List<Integer> termConstatnts) {
+		IntFunction function = graphicalModel.getFunctions().get(symbol.id);
+		return function.getAddress(termConstatnts);
+	}
+
+	
+	/**
 	 * Clones a KB to another KB. For reducing memory foot print only the tables for 
 	 * each function is cloned. All the other members are pointed to the old object.
 	 */
-	public GraphModBasedKB clone() {
-		GraphModBasedKB newKB = new GraphModBasedKB(mln);
+	@Override
+	public GroundStore clone() {
+		GraphModBasedGroundStore newKB = new GraphModBasedGroundStore(mln);
 		
 		newKB.graphicalModel = new IntGraphMod();
 		newKB.graphicalModel.setType(graphicalModel.getType());
@@ -217,15 +266,21 @@ public class GraphModBasedKB {
 		return newKB;
 	}
 	
-	public void setAssignment(GraphModBasedKB anotherKB) {
-
-		for (int i = 0; i < graphicalModel.getFunctions().size(); i++) {
-			IntFunction thisFunction =  graphicalModel.getFunctions().get(i);
-			IntFunction copyFromFunction =  anotherKB.graphicalModel.getFunctions().get(i);
-			thisFunction.setTable(Arrays.copyOf(copyFromFunction.getTable(), copyFromFunction.getTable().length));
+	@Override
+	public void setAssignment(GroundStore anotherKB) {
+		if (anotherKB instanceof GraphModBasedGroundStore) {
+			GraphModBasedGroundStore gmBasedKB = (GraphModBasedGroundStore) anotherKB;
+			
+			for (int i = 0; i < graphicalModel.getFunctions().size(); i++) {
+				IntFunction thisFunction =  graphicalModel.getFunctions().get(i);
+				IntFunction copyFromFunction =  gmBasedKB.graphicalModel.getFunctions().get(i);
+				thisFunction.setTable(Arrays.copyOf(copyFromFunction.getTable(), copyFromFunction.getTable().length));
+			}
 		}
+
 	}
 
+	@Override
 	public void randomAssignment() {
 		for (IntFunction function : graphicalModel.getFunctions()) {
 			int functionSize = function.getFunctionSize();
@@ -241,15 +296,18 @@ public class GraphModBasedKB {
 	}
 	
 	
+	@Override
 	public Double noOfTrueGroundings(int clauseId) {
 		return (double) satCounts[clauseId];
 	}
 
 	
+	@Override
 	public Double noOfFalseGroundings(int clauseId) {
 		return (double) (totalCounts[clauseId] - satCounts[clauseId]);
 	}
 
+	@Override
 	public Double noOfFalseGroundingsIncreased(int clauseId) {
 		CompiledStructure jt = joinTrees[clauseId];
 		WClause clause = mln.clauses.get(clauseId);
@@ -278,6 +336,7 @@ public class GraphModBasedKB {
 		}
 	}
 
+	@Override
 	public void update() {
 		for (int i = 0; i < joinTrees.length; i++) {
 			CompiledStructure jt = joinTrees[i];
@@ -288,6 +347,7 @@ public class GraphModBasedKB {
 		}
 	}
 
+	@Override
 	public void update(List<Integer> clauseIds) {
 		for (Integer clauseId : clauseIds) {
 			this.update(clauseId);
@@ -322,6 +382,7 @@ public class GraphModBasedKB {
 		}
 	}
 
+	@Override
 	public void getRandomGroundClause(int clauseIndex, List<Integer> groundClauseToBeReturned) {
 		groundClauseToBeReturned.clear();
 		groundClauseToBeReturned.add(clauseIndex);
@@ -375,6 +436,7 @@ public class GraphModBasedKB {
 		return false;
 	}
 
+	@Override
 	public void getRandomUnsatGroundClause(int clauseIndex, List<Integer> groundClauseToBeReturned) {
 		
 		// XXX Hack !!! First try rejection sampling 
@@ -404,12 +466,14 @@ public class GraphModBasedKB {
 		}
 	}
 
+	@Override
 	public void flipAtom(PredicateSymbol symbol, int atomId) {
 		graphicalModel.getFunctions().get(symbol.id).toggleTableEntry(atomId);
 		lastFlippedSymbol = symbol.id;
 		lastFlippedAtomId = atomId;
 	}
 
+	@Override
 	public void unflipAtom(PredicateSymbol symbol, int atomId) {
 		graphicalModel.getFunctions().get(symbol.id).toggleTableEntry(atomId);
 		graphicalModel.getFunctions().get(symbol.id).resetChangeEntry(atomId);

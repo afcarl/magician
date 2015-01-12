@@ -10,7 +10,8 @@ import starlib.mln.core.Atom;
 import starlib.mln.core.MLN;
 import starlib.mln.core.PredicateSymbol;
 import starlib.mln.core.WClause;
-import starlib.mln.infer.store.GraphModBasedKB;
+import starlib.mln.store.GraphModBasedGroundStore;
+import starlib.mln.store.GroundStore;
 import starlib.mln.util.Parser;
 
 public class EfficientMaxWalkSat {
@@ -33,8 +34,8 @@ public class EfficientMaxWalkSat {
 	protected MLN mln;
 	
 	// We will use an undirected graphical model as an interpretation
-	protected GraphModBasedKB groundStore;
-	protected GraphModBasedKB bestSolution;
+	protected GroundStore groundStore;
+	protected GroundStore bestSolution;
 	
 	protected double minSum;
 
@@ -59,7 +60,7 @@ public class EfficientMaxWalkSat {
 	}
 	
 	protected void initGroundStore() {
-		groundStore = new GraphModBasedKB(mln);
+		groundStore = new GraphModBasedGroundStore(mln);
 		unsatClauseWeight = new double[mln.clauses.size()];
 		
 		List<Integer> numberOfGroundings = new ArrayList<Integer>();

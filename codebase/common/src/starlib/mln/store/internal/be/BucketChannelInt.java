@@ -1,6 +1,6 @@
-package starlib.mln.infer.store.internal.be;
+package starlib.mln.store.internal.be;
 
-import starlib.mln.infer.store.internal.IntFunction;
+import starlib.mln.store.internal.IntFunction;
 
 public class BucketChannelInt {
 	

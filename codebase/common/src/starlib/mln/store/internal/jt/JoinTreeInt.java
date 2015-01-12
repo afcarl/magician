@@ -1,4 +1,4 @@
-package starlib.mln.infer.store.internal.jt;
+package starlib.mln.store.internal.jt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,10 +7,10 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 import starlib.gm.core.Variable;
-import starlib.mln.infer.store.internal.CompiledStructure;
-import starlib.mln.infer.store.internal.GlobalContext;
-import starlib.mln.infer.store.internal.IntFunction;
-import starlib.mln.infer.store.internal.RandomizedMinFillHeuristic;
+import starlib.mln.store.internal.CompiledStructure;
+import starlib.mln.store.internal.GlobalContext;
+import starlib.mln.store.internal.IntFunction;
+import starlib.mln.store.internal.RandomizedMinFillHeuristic;
 
 public class JoinTreeInt implements CompiledStructure {
 

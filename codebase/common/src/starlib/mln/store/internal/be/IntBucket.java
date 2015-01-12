@@ -1,10 +1,10 @@
-package starlib.mln.infer.store.internal.be;
+package starlib.mln.store.internal.be;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import starlib.gm.core.Variable;
-import starlib.mln.infer.store.internal.IntFunction;
+import starlib.mln.store.internal.IntFunction;
 
 public class IntBucket {
 

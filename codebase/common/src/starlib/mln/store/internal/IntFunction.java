@@ -1,6 +1,7 @@
-package starlib.mln.infer.store.internal;
+package starlib.mln.store.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -37,9 +38,10 @@ public class IntFunction {
 	public IntFunction(List<Variable> variables) {
 		this.variables = new ArrayList<>(variables);
 		this.populateMultipliers();
+		
 		int tableSize = this.getFunctionSize();
 		table = new double[tableSize];
-//		change = new int[tableSize];
+		Arrays.fill(table, 1.0);
 	}
 	
 	public IntFunction sharedCopy() {
@@ -134,6 +136,24 @@ public class IntFunction {
 		for (int i = variableSize - 1; i >= 0; i--) {
 			Variable variable = variables.get(i);
 			address += (multipliers.get(i) * variable.getValue());
+		}
+		
+		return address;
+	}
+	
+	/**
+	 * Computes the address of the table corresponding to the complete assignment provided
+	 * to all its variables (in the same order as variables)
+	 * 
+	 * @param values Complete assignment to variables 
+	 * @return
+	 */
+	public int getAddress(List<Integer> values) {
+		int address = 0;
+		
+		int variableSize = variables.size();
+		for (int i = variableSize - 1; i >= 0; i--) {
+			address += (multipliers.get(i) * values.get(i));
 		}
 		
 		return address;

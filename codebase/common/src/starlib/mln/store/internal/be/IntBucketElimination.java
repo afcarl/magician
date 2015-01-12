@@ -1,4 +1,4 @@
-package starlib.mln.infer.store.internal.be;
+package starlib.mln.store.internal.be;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,8 +7,8 @@ import java.util.Random;
 import java.util.Set;
 
 import starlib.gm.core.Variable;
-import starlib.mln.infer.store.internal.IntFunction;
-import starlib.mln.infer.store.internal.MinDegreeHeuristic;
+import starlib.mln.store.internal.IntFunction;
+import starlib.mln.store.internal.MinDegreeHeuristic;
 
 public class IntBucketElimination {
 	

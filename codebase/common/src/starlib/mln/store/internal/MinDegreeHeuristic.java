@@ -1,4 +1,4 @@
-package starlib.mln.infer.store.internal;
+package starlib.mln.store.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package starlib.mln.infer.store.internal.jt;
+package starlib.mln.store.internal.jt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import starlib.gm.core.Variable;
-import starlib.mln.infer.store.internal.IntFunction;
+import starlib.mln.store.internal.IntFunction;
 import starlib.util.ParallelUtil;
 
 public class JGNodeIntSS extends JGNodeInt {
