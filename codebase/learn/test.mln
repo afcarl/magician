@@ -1,9 +1,10 @@
 #domains
 dom1={0, ..., 1}
+dom2={0, ..., 2}
 
 #predicates
-A(dom1, dom1)
-B(dom1, dom1)
+A(dom1, dom2)
+B(dom1, dom2)
 C(dom1, dom1)
 
 #formulas

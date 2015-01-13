@@ -29,7 +29,7 @@ public class GenerativeLearningTest {
 	private static LogDouble unnormalizedOriginalProb(MLN mln, Atom atom) {
 		LogDouble exp = new LogDouble(0d, true);
 		
-		// Create a list of formula containing current atom
+		// Create a list of formulas containing current atom
 		List<WClause> formula_list = new ArrayList<WClause>();
 		for (WClause formula : mln.clauses) {
 			for (Atom atom_flag : formula.atoms) {
