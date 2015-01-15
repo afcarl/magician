@@ -1,5 +1,5 @@
 #domains
-dom1={1, ..., 100}
+dom1={1, ..., 10}
 
 #predicates
 Loves(dom1, dom1)

@@ -9,11 +9,83 @@ public class MLN {
 
 	public int max_predicate_id;
 	public int maxDegree;
-	public List<PredicateSymbol> symbols = new ArrayList<PredicateSymbol>();
-	public List<WClause> clauses = new ArrayList<WClause>();
-	public List<Formula> formulas = new ArrayList<Formula>();
+	
+	// Core Data Structures for MLN
+	private  List<PredicateSymbol> symbols = new ArrayList<PredicateSymbol>();
+	private List<WClause> clauses = new ArrayList<WClause>();
 
+	public List<Formula> formulas = new ArrayList<Formula>();
 	public List<WClause> evidence = new ArrayList<WClause>();
+	
+	// Index to the data structures
+	private List<List<Integer>> symbolClauseMap = new ArrayList<List<Integer>>();
+	
+	public List<WClause> getClauses() {
+		return clauses;
+	}
+	
+	public WClause getClause(int clauseId) {
+		return clauses.get(clauseId);
+	}
+	
+	public int numberOfClauses() {
+		return clauses.size();
+	}
+
+	public void addClause(WClause clause) {
+		for (Atom atom : clause.atoms) {
+			symbolClauseMap.get(atom.symbol.id).add(clauses.size());
+		}
+		this.clauses.add(clause);
+	}
+	
+	public void addAllClauses(List<WClause> clauses) {
+		for (WClause clause : clauses) {
+			this.addClause(clause);
+		}
+	}
+	
+	public List<PredicateSymbol> getSymbols() {
+		return symbols;
+	}
+	
+	public PredicateSymbol getSymbol(int index) {
+		return symbols.get(index);
+	}
+	
+	public int numberOfSymbols() {
+		return symbols.size();
+	}
+	
+	public void addSymbol(PredicateSymbol symbol) {
+		this.symbols.add(symbol);
+		symbolClauseMap.add(new ArrayList<Integer>(1));
+	}
+	
+	public List<Integer> getClauseIdsBySymbol(PredicateSymbol symbol) {
+		return symbolClauseMap.get(symbol.id);
+	}
+	
+	public List<Integer> getClauseIdsBySymbolId(int symbolId) {
+		return symbolClauseMap.get(symbolId);
+	}
+	
+	public List<WClause> getClausesBySymbol(PredicateSymbol symbol) {
+		return this.getClausesBySymbolId(symbol.id);
+	}
+	
+	public List<WClause> getClausesBySymbolId(int symbolId) {
+		List<Integer> clauseIds = symbolClauseMap.get(symbolId);
+		List<WClause> clauses = new ArrayList<>(clauseIds.size());
+		
+		for (Integer clauseId : clauseIds) {
+			clauses.add(this.clauses.get(clauseId));
+		}
+		
+		return clauses;
+	}
+	
+	
 	
 	public static WClause create_new_clause(WClause clause) {
 

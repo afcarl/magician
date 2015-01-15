@@ -10,8 +10,8 @@ import starlib.mln.core.Atom;
 import starlib.mln.core.MLN;
 import starlib.mln.core.PredicateSymbol;
 import starlib.mln.core.WClause;
-import starlib.mln.store.GraphModBasedGroundStore;
 import starlib.mln.store.GroundStore;
+import starlib.mln.store.GroundStoreFactory;
 import starlib.mln.util.Parser;
 
 public class EfficientMaxWalkSat {
@@ -43,8 +43,6 @@ public class EfficientMaxWalkSat {
 	
 	protected double[] unsatClauseWeight;
 	
-	protected List<List<Integer>> symbolClauseMap = new ArrayList<List<Integer>>();
-	
 	protected static boolean print = true;
 	
 	
@@ -60,33 +58,18 @@ public class EfficientMaxWalkSat {
 	}
 	
 	protected void initGroundStore() {
-		groundStore = new GraphModBasedGroundStore(mln);
-		unsatClauseWeight = new double[mln.clauses.size()];
-		
-		List<Integer> numberOfGroundings = new ArrayList<Integer>();
-		for (int i = 0; i < mln.symbols.size(); i++) {
-			numberOfGroundings.add(null);
-			symbolClauseMap.add(new ArrayList<Integer>());
-		}
+		unsatClauseWeight = new double[mln.numberOfClauses()];
 		
 		int maximumClauseSize = 0;
-		for (int i=0; i<mln.clauses.size(); i++) {
-			WClause clause = mln.clauses.get(i);
+		for (int i=0; i<mln.numberOfClauses(); i++) {
+			WClause clause = mln.getClause(i);
 			if(clause.atoms.size() > maximumClauseSize) {
 				maximumClauseSize = clause.atoms.size();
 			}
-			for (Atom atom : clause.atoms) {
-				Integer savedNumberOfGrounding = numberOfGroundings.get(atom.symbol.id);
-				int atomsNumberOfGrounding = atom.getNumberOfGroundings();
-				assert(savedNumberOfGrounding == null || savedNumberOfGrounding.equals(atomsNumberOfGrounding));
-				numberOfGroundings.set(atom.symbol.id, atomsNumberOfGrounding);
-				
-				symbolClauseMap.get(atom.symbol.id).add(i);
-			}
 		}
 		
-		groundStore.init();
 		groundClause = new ArrayList<>(maximumClauseSize + 1);
+		groundStore = GroundStoreFactory.createGraphModBasedGroundStore(mln);
 	}
 	
 //	public GraphModBasedKB getBestSolution() {
@@ -186,7 +169,7 @@ public class EfficientMaxWalkSat {
 		int atomIndex = random.nextInt(clause.size() - 1);
 		int atomId = clause.get(atomIndex+1);
 		
-		Atom atom = mln.clauses.get(clauseIndex).atoms.get(atomIndex);
+		Atom atom = mln.getClause(clauseIndex).atoms.get(atomIndex);
 		
 		// Flip the random atom
 		groundStore.flipAtom(atom.symbol, atomId);
@@ -226,7 +209,7 @@ public class EfficientMaxWalkSat {
 	
 	private List<Integer> randomClause() {
 		//Random selection of clauses
-		int clauseIndex = random.nextInt(mln.clauses.size());
+		int clauseIndex = random.nextInt(mln.numberOfClauses());
 
 		// A ground clause is represented as list 
 		groundStore.getRandomGroundClause(clauseIndex, groundClause);
@@ -237,7 +220,7 @@ public class EfficientMaxWalkSat {
 	private double clauseOverhead(int clauseId) {
 		double unsatClauseCount = groundStore.noOfFalseGroundings(clauseId);
 		
-		double clauseOverhead = mln.clauses.get(clauseId).weight.getValue() * unsatClauseCount;
+		double clauseOverhead = mln.getClause(clauseId).weight.getValue() * unsatClauseCount;
 		
 		if(clauseOverhead < 0) {
 			System.err.println("Unexpected!!");
@@ -248,7 +231,7 @@ public class EfficientMaxWalkSat {
 	
 	private double clauseOverheadDelta(int clauseId) {
 		double unsatClauseCountIncreased = groundStore.noOfFalseGroundingsIncreased(clauseId);
-		double clauseOverheadDelta = mln.clauses.get(clauseId).weight.getValue() * unsatClauseCountIncreased;
+		double clauseOverheadDelta = mln.getClause(clauseId).weight.getValue() * unsatClauseCountIncreased;
 		return clauseOverheadDelta;
 	}
 	
@@ -259,7 +242,7 @@ public class EfficientMaxWalkSat {
 		
 		int clauseIndex = clause.get(0);
 		
-		List<Atom> atoms = mln.clauses.get(clauseIndex).atoms;
+		List<Atom> atoms = mln.getClause(clauseIndex).atoms;
 		
 		// XXX Hack !!! If unit clause no need to choose the best (i.e.- straight away flip it)
 		if(atoms.size() == 1) {
@@ -280,7 +263,7 @@ public class EfficientMaxWalkSat {
 			// Compute cost
 			double deltaOverhead = 0.0;
 			
-			for (Integer clauseId : symbolClauseMap.get(symbol.id)) {
+			for (Integer clauseId : mln.getClauseIdsBySymbol(symbol)) {
 				double clauseOverheadDelta = this.clauseOverheadDelta(clauseId);
 				deltaOverhead += clauseOverheadDelta;
 			}
@@ -316,11 +299,11 @@ public class EfficientMaxWalkSat {
 		
 		long time = System.currentTimeMillis();
 		
-		groundStore.update(symbolClauseMap.get(symbol.id));
+		groundStore.update(mln.getClauseIdsBySymbol(symbol));
 		if(print)
 			System.out.println("Time taken to update the ground store is: "+ (System.currentTimeMillis() - time) + " ms.");
 		
-		for (Integer clauseId : symbolClauseMap.get(symbol.id)) {
+		for (Integer clauseId : mln.getClauseIdsBySymbol(symbol)) {
 			double previousClauseOverHead = unsatClauseWeight[clauseId];
 			double clauseOverhead = this.clauseOverhead(clauseId);
 			deltaOverhead = deltaOverhead + clauseOverhead - previousClauseOverHead;
@@ -340,7 +323,7 @@ public class EfficientMaxWalkSat {
 		
 		double overhead = 0.0;
 		
-		for (int i = 0; i < mln.clauses.size(); i++) {
+		for (int i = 0; i < mln.numberOfClauses(); i++) {
 			double clauseOverhead = this.clauseOverhead(i);
 			overhead += clauseOverhead;
 			
@@ -370,7 +353,7 @@ public class EfficientMaxWalkSat {
 //			
 //		}
 		
-		String fileName = "student_mln_100.txt" ;
+		String fileName = "love_mln_int_10.txt" ;
 		for (int i = 0; i < noOfRun; i++) {
 			System.out.println("Run " + (i+1) +" for file "+fileName );
 			runFor(fileName);

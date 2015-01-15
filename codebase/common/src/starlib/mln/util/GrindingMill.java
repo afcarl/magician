@@ -38,7 +38,7 @@ public class GrindingMill {
 	public static MLN ground(MLN mln) {
 		init();
 		
-		for (WClause clause : mln.clauses) {
+		for (WClause clause : mln.getClauses()) {
 			Set<Term> clauseWiseTermToGround = new HashSet<Term>();
 			for (Atom atom : clause.atoms) {
 				for (int j = 0; j < atom.terms.size(); j++) {
@@ -55,7 +55,7 @@ public class GrindingMill {
 	public static MLN ground(MLN mln, List<List<Integer>> termsToGround) {
 		init();
 		
-		for (WClause clause : mln.clauses) {
+		for (WClause clause : mln.getClauses()) {
 			Set<Term> clauseWiseTermToGround = new HashSet<Term>();
 			for (Atom atom : clause.atoms) {
 				for (int j = 0; j < atom.terms.size(); j++) {
@@ -131,7 +131,7 @@ public class GrindingMill {
 			groundClauses.add(newClause);
 		}
 		
-		groundMln.clauses.addAll(groundClauses);
+		groundMln.addAllClauses(groundClauses);
 	}
 	
 	/**
@@ -146,7 +146,7 @@ public class GrindingMill {
 		PredicateSymbol newSymbol = new PredicateSymbol(predicateId,symbol.symbol,var_types,symbol.pweight,symbol.nweight);
 		
 		predicateId++;
-		groundMln.symbols.add(newSymbol);
+		groundMln.addSymbol(newSymbol);
 		
 		return newSymbol;
 	}

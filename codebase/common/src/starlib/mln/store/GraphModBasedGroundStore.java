@@ -64,25 +64,25 @@ public class GraphModBasedGroundStore implements GroundStore {
 	
 	@Override
 	public void init() {
-		joinTrees = new CompiledStructure[mln.clauses.size()];
-		satCounts = new double[mln.clauses.size()];
-		totalCounts = new double[mln.clauses.size()];
-		selfJoinedClauses = new ArrayList<>(mln.clauses.size());
+		joinTrees = new CompiledStructure[mln.numberOfClauses()];
+		satCounts = new double[mln.numberOfClauses()];
+		totalCounts = new double[mln.numberOfClauses()];
+		selfJoinedClauses = new ArrayList<>(mln.numberOfClauses());
 		
 		graphicalModel = new IntGraphMod();
 		
 		List<Variable> variables = new ArrayList<>();
 		int variableId = 0;
-		clauseWiseFunctionScopes = new Variable[mln.clauses.size()][][];
+		clauseWiseFunctionScopes = new Variable[mln.numberOfClauses()][][];
 
-		IntFunction[] functions = new IntFunction[mln.symbols.size()];
+		IntFunction[] functions = new IntFunction[mln.numberOfSymbols()];
 		
-		int[] symbolProcessed = new int[mln.symbols.size()];
+		int[] symbolProcessed = new int[mln.numberOfSymbols()];
 		
 
 		// Create variables and functions
-		for (int i=0; i<mln.clauses.size(); i++) {
-			WClause clause = mln.clauses.get(i);
+		for (int i=0; i<mln.numberOfClauses(); i++) {
+			WClause clause = mln.getClause(i);
 			
 			for (int j = 0; j < clause.atoms.size(); j++) {
 				Atom atom = clause.atoms.get(j);
@@ -113,8 +113,8 @@ public class GraphModBasedGroundStore implements GroundStore {
 		}
 		
 		// Create clause-wise scope valriables
-		for (int i=0; i<mln.clauses.size(); i++) {
-			WClause clause = mln.clauses.get(i);
+		for (int i=0; i<mln.numberOfClauses(); i++) {
+			WClause clause = mln.getClause(i);
 			List<Term> oldTerms = new ArrayList<Term>();
 			List<Variable> newVariables = new ArrayList<>();
 			int newVariableId = 0;
@@ -165,7 +165,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 		
 		
 		// XXX: Hack:: Violates coupling. I am still gonna use it anyway t save computing same thing over and over
-		GlobalContext.init(mln.clauses.size());
+		GlobalContext.init(mln.numberOfClauses());
 		
 		this.setUpInternalClauseStore();
 		this.incoporateEvidence();
@@ -176,8 +176,8 @@ public class GraphModBasedGroundStore implements GroundStore {
 	 */
 	protected void setUpInternalClauseStore() {
 		// Populate Bucket-Trees. Each tree will have separate function			
-		for (int i=0; i<mln.clauses.size(); i++) {
-			WClause clause = mln.clauses.get(i);
+		for (int i=0; i<mln.numberOfClauses(); i++) {
+			WClause clause = mln.getClause(i);
 			List<IntFunction> junctionTreeFunctions = new ArrayList<>(clause.atoms.size());
 			for (int j = 0; j < clause.atoms.size(); j++) {
 				Atom atom = clause.atoms.get(j);
@@ -310,7 +310,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 	@Override
 	public Double noOfFalseGroundingsIncreased(int clauseId) {
 		CompiledStructure jt = joinTrees[clauseId];
-		WClause clause = mln.clauses.get(clauseId);
+		WClause clause = mln.getClause(clauseId);
 		
 		int clauseLength = clause.atoms.size();
 		List<Integer> changedFunctionIdList = new ArrayList<>(clauseLength);
@@ -358,7 +358,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 	
 	private void update(int clauseId) {
 		CompiledStructure jt = joinTrees[clauseId];
-		WClause clause = mln.clauses.get(clauseId);
+		WClause clause = mln.getClause(clauseId);
 		
 		int clauseLength = clause.atoms.size();
 		List<Integer> changedFunctionIdList = new ArrayList<>(clauseLength);
@@ -387,7 +387,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 		groundClauseToBeReturned.clear();
 		groundClauseToBeReturned.add(clauseIndex);
 		
-		WClause clause = mln.clauses.get(clauseIndex);
+		WClause clause = mln.getClause(clauseIndex);
 		
 		List<Variable> variables = joinTrees[clauseIndex].getVariables();
 		
@@ -409,7 +409,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 	
 	private boolean isGroundClauseSatisfied(int liftedClauseIndex, List<Integer> groundClause) {
 		boolean satisfied = false;
-		WClause clause = mln.clauses.get(liftedClauseIndex);
+		WClause clause = mln.getClause(liftedClauseIndex);
 
 		int clauseLength = clause.atoms.size();
 		for (int i = 0; i < clauseLength; i++) {
@@ -447,7 +447,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 		groundClauseToBeReturned.clear();
 		groundClauseToBeReturned.add(clauseIndex);
 		
-		WClause clause = mln.clauses.get(clauseIndex);
+		WClause clause = mln.getClause(clauseIndex);
 
 		CompiledStructure jt = joinTrees[clauseIndex];
 		// Generate a sample

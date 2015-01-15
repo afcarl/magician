@@ -89,7 +89,7 @@ public class Parser {
 		clause.sign = sign;
 		for(int i=0;i<numAtoms;i++)
 		{
-			PredicateSymbol symbol = MLN.create_new_symbol(mln.symbols.get(predicateSymbolIndex.get(i)));
+			PredicateSymbol symbol = MLN.create_new_symbol(mln.getSymbol(predicateSymbolIndex.get(i)));
 			List<Term> terms = iTermsList.get(i);
 			Atom atom = new Atom(symbol,terms);
 			clause.atoms.add(atom);
@@ -140,10 +140,10 @@ public class Parser {
 				sign.set(i, true);
 			}
 
-			for(int k=0;k<mln.symbols.size();k++)
+			for(int k=0;k<mln.numberOfSymbols();k++)
 			{
 				//found the predicate
-				if(mln.symbols.get(k).symbol.equals(predicateName))
+				if(mln.getSymbol(k).symbol.equals(predicateName))
 				{
 					predicateSymbolIndex.set(i, k);
 					break;
@@ -156,7 +156,7 @@ public class Parser {
 			sTermsList.add(new ArrayList<String>(Arrays.asList(terms)));
 
 			//check if the number of terms is equal to the declared predicate
-			if(terms.length != mln.symbols.get(predicateSymbolIndex.get(i)).variable_types.size())
+			if(terms.length != mln.getSymbol(predicateSymbolIndex.get(i)).variable_types.size())
 			{
 				System.out.println("Error! Number/domain of terms in the predicate delcaration does not match in formula. " + predicateName);
 				System.exit(-1);
@@ -215,11 +215,11 @@ public class Parser {
 							{
 								//check if the domains of the matched variables are the same
 								int atomSymbolIndex1 = predicateSymbolIndex.get(m);
-								int atomId1 = mln.symbols.get(atomSymbolIndex1).id;
+								int atomId1 = mln.getSymbol(atomSymbolIndex1).id;
 								int domainListIndex1 = predicateDomainMap.get(atomId1).get(n);
 
 								int atomSymbolIndex2 = predicateSymbolIndex.get(j);
-								int atomId2 = mln.symbols.get(atomSymbolIndex2).id;
+								int atomId2 = mln.getSymbol(atomSymbolIndex2).id;
 								int domainListIndex2 = predicateDomainMap.get(atomId2).get(k);
 								if(!domainList.get(domainListIndex1).name.equals(domainList.get(domainListIndex2).name))
 								{
@@ -254,13 +254,13 @@ public class Parser {
 		newClause.weight = new LogDouble(weight, true);
 		CNF.add(newClause);
 
-		int formulaStartIndex = mln.clauses.size();
+		int formulaStartIndex = mln.numberOfClauses();
 
 		for(int i=0;i<CNF.size();i++)
 		{
-			mln.clauses.add(CNF.get(i));
+			mln.addClause(CNF.get(i));
 		}
-		int formulaEndIndex = mln.clauses.size();
+		int formulaEndIndex = mln.numberOfClauses();
 		mln.formulas.add(new Formula(formulaStartIndex,formulaEndIndex, new LogDouble(weight, true)));
 
 	}
@@ -301,7 +301,7 @@ public class Parser {
 		//create a new predicate symbol
 		PredicateSymbol p = new PredicateSymbol(predicateId,symbolName,var_types,LogDouble.ONE,LogDouble.ONE);
 		//predicateList.push_back(p);
-		mln.symbols.add(p);
+		mln.addSymbol(p);
 
 		//Build the map for this predicate;
 		//For predicateid, generate a List of domainIds that index Domains
@@ -392,9 +392,9 @@ public class Parser {
 			String predicateName = signedSymbol.replace(NOTOPERATOR, EMPTY);
 			
 			int predicateSymbolIndex = -1;
-			for (int i = 0; i < mln.symbols.size(); i++) {
+			for (int i = 0; i < mln.numberOfSymbols(); i++) {
 				//found the predicate
-				if(mln.symbols.get(i).symbol.equals(predicateName)) {
+				if(mln.getSymbol(i).symbol.equals(predicateName)) {
 					predicateSymbolIndex = i;
 					break;
 				}
@@ -405,7 +405,7 @@ public class Parser {
 				System.exit(-1);
 			}
 
-			if(terms.length > mln.symbols.get(predicateSymbolIndex).variable_types.size()) {
+			if(terms.length > mln.getSymbol(predicateSymbolIndex).variable_types.size()) {
 				System.out.println("Error! Wrong terms in Predicate in DB file: "  + predicateName );
 				System.exit(-1);
 			}
@@ -453,7 +453,7 @@ public class Parser {
 				termList.add(term);
 			}
 			
-			Atom atom = new Atom(MLN.create_new_symbol(mln.symbols.get(predicateSymbolIndex)), termList);
+			Atom atom = new Atom(MLN.create_new_symbol(mln.getSymbol(predicateSymbolIndex)), termList);
 			WClause newClause = new WClause();
 			newClause.atoms.add(atom);
 			newClause.satisfied = false;
@@ -480,13 +480,13 @@ public class Parser {
 		
 		// Test parsing
 		System.out.println("Predicates:");
-		for (PredicateSymbol s : mln.symbols) {
+		for (PredicateSymbol s : mln.getSymbols()) {
 			System.out.println(s);
 		}
 
 		System.out.println();
 		System.out.println("Formulas:");
-		for (WClause wc : mln.clauses) {
+		for (WClause wc : mln.getClauses()) {
 			wc.print();
 		}
 		
