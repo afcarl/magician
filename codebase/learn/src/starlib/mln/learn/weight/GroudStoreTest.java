@@ -11,34 +11,6 @@ import starlib.mln.store.GroundStore;
 import starlib.mln.store.GroundStoreFactory;
 
 public class GroudStoreTest {
-	/** Get all combinations of term value in an atom */
-	static void backtrack(List<Integer> term_values, int term_index, Atom atom, GroundStore gs, int clause_id) {
-		if (term_index >= atom.terms.size()) {
-			// Get atom id to flip
-			int atomId = gs.getGroundAtomId(atom.symbol, term_values);
-			gs.flipAtom(atom.symbol, atomId);
-			
-			// Get a list of formulas containing current atom and update ground store accordingly - Somdeb
-			List<Integer> formula_list = new ArrayList<Integer>();
-			formula_list.add(clause_id);
-			gs.update(formula_list);
-			
-			// Debug printing
-			System.out.printf("%s: %.1f\n", term_values.toString(), gs.noOfTrueGroundings(clause_id));
-			gs.unflipAtom(atom.symbol, atomId);
-			
-			// Cache in the count for later use
-			return;
-		}
-		
-		for (int val : atom.terms.get(term_index).domain) {
-			term_values.add(term_index, val);
-			backtrack(term_values, term_index+1, atom, gs, clause_id);
-			term_values.remove(term_index);
-		}
-	}
-	
-	
 	public static void main(String[] args) throws FileNotFoundException {
 		// Input files
 		String mln_file = "test.mln";
@@ -57,16 +29,30 @@ public class GroudStoreTest {
 		
 		gs.update();
 		
-		for (int clause_id = 0; clause_id < mln.clauses.size(); clause_id++) {
-			mln.clauses.get(clause_id).print();
-			System.out.printf("Clause %d: %.1f\n", clause_id, gs.noOfTrueGroundings(clause_id));
+		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
+			mln.getClauses().get(clause_id).print();
+			System.out.printf("Clause %d's original count: %.1f\n", clause_id, gs.noOfTrueGroundings(clause_id));
 			
 			System.out.println("Ground atoms");
 			
-			// Iterate through all ground atoms
-			for (Atom atom : mln.clauses.get(clause_id).atoms) {
+			// Iterate through all atoms
+			for (Atom atom : mln.getClause(clause_id).atoms) {
 				System.out.println(atom.symbol.toString());
-				backtrack(new ArrayList<Integer>(atom.terms.size()), 0, atom, gs, clause_id);
+				
+				// Iterate through all ground values of current atom
+				for (int ground_atom_id = 0; ground_atom_id < atom.getNumberOfGroundings(); ground_atom_id++) {
+					gs.flipAtom(atom.symbol, ground_atom_id);
+					
+					// Get a list of formulas containing current atom and update ground store accordingly - Somdeb
+					List<Integer> formula_list = gs.getMln().getClauseIdsBySymbol(atom.symbol);
+					gs.update(formula_list);
+					
+					// Debug printing
+					System.out.printf("Flipped %d: %.1f\n", ground_atom_id, gs.noOfTrueGroundings(clause_id));
+					gs.unflipAtom(atom.symbol, ground_atom_id);
+					
+					// Cache in the count for later use
+				}
 				System.out.println();
 			}
 		}

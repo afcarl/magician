@@ -15,10 +15,10 @@ public interface GroundStore {
 	 * Get the ground atom id of a Predicate given assignment to its terms
 	 * 
 	 * @param symbol
-	 * @param termConstatnts
+	 * @param termConstants
 	 * @return
 	 */
-	public int getGroundAtomId(PredicateSymbol symbol, List<Integer> termConstatnts);
+	public int getGroundAtomId(PredicateSymbol symbol, List<Integer> termConstants);
 	
 	/**
 	 * Clones a KB to another KB. For reducing memory foot print only the tables for 

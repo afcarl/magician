@@ -227,13 +227,13 @@ public class GraphModBasedGroundStore implements GroundStore {
 	 * Get the ground atom id of a Predicate given assignment to its terms
 	 * 
 	 * @param symbol
-	 * @param termConstatnts
+	 * @param termConstants
 	 * @return
 	 */
 	@Override
-	public int getGroundAtomId(PredicateSymbol symbol, List<Integer> termConstatnts) {
+	public int getGroundAtomId(PredicateSymbol symbol, List<Integer> termConstants) {
 		IntFunction function = graphicalModel.getFunctions().get(symbol.id);
-		return function.getAddress(termConstatnts);
+		return function.getAddress(termConstants);
 	}
 
 	
