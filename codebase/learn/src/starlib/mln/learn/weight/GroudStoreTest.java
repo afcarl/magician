@@ -1,12 +1,11 @@
 package starlib.mln.learn.weight;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 
 import starlib.mln.core.Atom;
 import starlib.mln.core.MLN;
-import starlib.mln.core.Term;
+import starlib.mln.core.WClause;
 import starlib.mln.store.GroundStore;
 import starlib.mln.store.GroundStoreFactory;
 
@@ -28,13 +27,14 @@ public class GroudStoreTest {
 		MLN mln = gs.getMln();
 		
 		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
-			mln.getClauses().get(clause_id).print();
+			WClause formula = mln.getClause(clause_id);
+			formula.print();
 			System.out.printf("Clause %d's original count: %.1f\n", clause_id, gs.noOfTrueGroundings(clause_id));
 			
 			System.out.println("Ground atoms");
 			
 			// Iterate through all atoms
-			for (Atom atom : mln.getClause(clause_id).atoms) {
+			for (Atom atom : formula.atoms) {
 				System.out.println(atom.symbol.toString());
 				
 				// Iterate through all ground values of current atom
