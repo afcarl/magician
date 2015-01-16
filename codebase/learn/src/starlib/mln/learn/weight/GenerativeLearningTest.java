@@ -96,24 +96,27 @@ public class GenerativeLearningTest {
 			}
 		}
 	}
-	
-	/** Check if the weights converge to stop updating */
-	private static boolean converge() {
-		return false;
-	}
 
 	/** Learn weights for formulas based on given world (database file) */
 	public static void learnWeights() {
 		MLN mln = gs.getMln();
 		
-		// while (true) {
-		int iterations = 100;
-		for (int i = 0; i < iterations; i++) {
-			System.out.println("Iteration " + i);
+		int iter = 1;
+		boolean converged = false;
+		double[] weight_change = new double[mln.getClauses().size()];
+		
+		// Parameters
+		int MAX_ITER = 1000;
+		double threshold = 0.00001;
+		
+		// Loop until the weights converge or after a preset number of iterations
+		while (!converged && iter < MAX_ITER) {
+			System.out.println("Iteration " + iter);
 			
-			double learning_rate = 1.0 / (i + 1);
+			double learning_rate = 1.0 / iter;
 			
-			for (WClause formula : mln.getClauses()) {
+			for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
+				WClause formula = mln.getClause(clause_id);
 				double delta = 0;
 				
 				// True grounding count of the original formula
@@ -142,12 +145,23 @@ public class GenerativeLearningTest {
 				}
 	
 				// Update weight of current formula
+				weight_change[clause_id] = learning_rate * delta;
 				formula.weight = new LogDouble(formula.weight.getLogValue() + learning_rate * delta, true);
 				System.out.println("Updated weight: " + formula.weight);
 			}
+			
+			iter++;
+
+			// Check for weight convergence
+			converged = true;
+			for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
+				if (weight_change[clause_id] > threshold) {
+					converged = false;
+					break;
+				}
+			}
 			System.out.println();
 		}
-		// }
 	}
 
 	public static void main(String[] args) throws FileNotFoundException {
