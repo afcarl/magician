@@ -33,9 +33,9 @@ public class GenerativeLearningTest {
 		List<WClause> formula_list = gs.getMln().getClausesBySymbol(atom.symbol);
 
 		// Loop through the list
-		for (WClause formula : formula_list)
-			System.out.printf("%.1f\n", true_grouding_count.get(formula.toString()));
-//			exp = exp.multiply(formula.weight.power(true_grouding_count.get(formula.toString())));
+		for (WClause formula : formula_list) {
+			exp = exp.multiply(formula.weight.power(true_grouding_count.get(formula.toString())));
+		}
 		return exp;
 	}
 
@@ -49,12 +49,9 @@ public class GenerativeLearningTest {
 
 		// Loop through the list
 		for (WClause formula : formula_list) {
-			System.out.printf("%.1f\n", true_grouding_count.get(formula
-					.toString() + atom.symbol.toString() + ground_atom_id));
-//			exp = exp.multiply(formula.weight.power(true_grouding_count
-//					.get(formula.toString() + atom.toString() + ground_atom_id)));
+			exp = exp.multiply(formula.weight.power(true_grouding_count
+					.get(formula.toString() + atom.symbol.toString() + ground_atom_id)));
 		}
-		System.out.println();
 		return exp;
 	}
 
@@ -74,45 +71,35 @@ public class GenerativeLearningTest {
 
 		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 			WClause formula = mln.getClause(clause_id);
-			formula.print();
 			
 			// Compute and cache the count of the original formula
 			double original_count = gs.noOfTrueGroundings(clause_id);
-			System.out.printf("Clause %d's original count: %.1f\n", clause_id,
-					original_count);
 			true_grouding_count.put(formula.toString(), original_count);
-
-			System.out.println("Ground atoms");
 
 			// Iterate through all atoms
 			for (Atom atom : mln.getClause(clause_id).atoms) {
-				System.out.println(atom.symbol.toString());
-
+				
 				// Iterate through all ground values of current atom
 				for (int ground_atom_id = 0; ground_atom_id < atom
 						.getNumberOfGroundings(); ground_atom_id++) {
-					
-					// Flip the ground atom, get a list of formulas containing 
-					// current atom and update ground store accordingly
+
 					gs.flipAtom(atom.symbol, ground_atom_id);
-					List<Integer> formula_list = gs.getMln().getClauseIdsBySymbol(atom.symbol);
-					gs.update(formula_list);
 
 					// Compute and cache the count of the formula with the current
 					// ground atom flipped
-					double flipped_count = gs.noOfTrueGroundings(clause_id);
-					System.out.printf("Flipped %d: %.1f\n", ground_atom_id,
-							flipped_count);
+					double flipped_count = original_count - gs.noOfFalseGroundingsIncreased(clause_id);
 					true_grouding_count.put(formula.toString() 
 							+ atom.symbol.toString() + ground_atom_id, flipped_count);
-					
-					// Unflip the ground atom
-					gs.flipAtom(atom.symbol, ground_atom_id);
-					gs.update(formula_list);
+
+					gs.unflipAtom(atom.symbol, ground_atom_id);
 				}
-				System.out.println();
 			}
 		}
+	}
+	
+	/** Check if the weights converge to stop updating */
+	private static boolean converge() {
+		return false;
 	}
 
 	/** Learn weights for formulas based on given world (database file) */
@@ -120,36 +107,45 @@ public class GenerativeLearningTest {
 		MLN mln = gs.getMln();
 		
 		// while (true) {
-		for (WClause formula : mln.getClauses()) {
-			double delta = 0;
-			double original_count = true_grouding_count.get(formula.toString());
-
-			for (Atom atom : formula.atoms) {
-				System.out.println();
-				System.out.println(atom.symbol.toString());
-				System.out.println("Original series");
-				LogDouble original_prob = unnormalizedOriginalProb(atom);
-
-				for (int ground_atom_id = 0; ground_atom_id < atom
-						.getNumberOfGroundings(); ground_atom_id++) {
-					double flipped_count = true_grouding_count.get(formula
-							.toString() + atom.symbol.toString() + ground_atom_id);
-
-					System.out.printf("Flipped %d series\n", ground_atom_id);
-					LogDouble flipped_prob = unnormalizedFlippedProb(atom, ground_atom_id);
-
-//					delta = original_count
-//							- ((original_prob.multiply(new LogDouble(
-//									original_count * 1.0))
-//									.add(flipped_prob.multiply(new LogDouble(
-//											flipped_count * 1.0))))
-//									.divide(original_prob.add(flipped_prob)))
-//									.getValue();
+		int iterations = 100;
+		for (int i = 0; i < iterations; i++) {
+			System.out.println("Iteration " + i);
+			
+			double learning_rate = 1.0 / (i + 1);
+			
+			for (WClause formula : mln.getClauses()) {
+				double delta = 0;
+				
+				// True grounding count of the original formula
+				double original_count = true_grouding_count.get(formula.toString());
+	
+				for (Atom atom : formula.atoms) {
+					LogDouble original_prob = unnormalizedOriginalProb(atom);
+	
+					for (int ground_atom_id = 0; ground_atom_id < atom
+							.getNumberOfGroundings(); ground_atom_id++) {
+						
+						// True grounding count of the formula with the current ground atom flipped
+						double flipped_count = true_grouding_count.get(formula
+								.toString() + atom.symbol.toString() + ground_atom_id);
+						LogDouble flipped_prob = unnormalizedFlippedProb(atom, ground_atom_id);
+	
+						// Match the counts and probabilities to compute the weight change
+						delta += original_count
+								- ((original_prob.multiply(new LogDouble(
+										original_count * 1.0))
+										.add(flipped_prob.multiply(new LogDouble(
+												flipped_count * 1.0))))
+										.divide(original_prob.add(flipped_prob)))
+										.getValue();
+					}
 				}
+	
+				// Update weight of current formula
+				formula.weight = new LogDouble(formula.weight.getLogValue() + learning_rate * delta, true);
+				System.out.println("Updated weight: " + formula.weight);
 			}
-
-			// formula.weight += delta;
-//			formula.weight = new LogDouble(formula.weight.getLogValue() + delta, true);			
+			System.out.println();
 		}
 		// }
 	}
@@ -161,11 +157,13 @@ public class GenerativeLearningTest {
 		String mln_file = "test.mln";
 		String db_file = "test.db";
 
-		/** Learning weights */
+		/** Learning */
+		System.out.println("Learn Weights");
 		
 		// Compute all the counts required
-		System.out.println("Learn Weights");
 		computeCounts(mln_file, db_file);
+		
+		// Update weights
 		learnWeights();
 	}
 }

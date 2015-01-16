@@ -29,7 +29,8 @@ public class GroudStoreTest {
 		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 			WClause formula = mln.getClause(clause_id);
 			formula.print();
-			System.out.printf("Clause %d's original count: %.1f\n", clause_id, gs.noOfTrueGroundings(clause_id));
+			double original_count = gs.noOfTrueGroundings(clause_id);
+			System.out.printf("Clause %d's original count: %.1f\n", clause_id, original_count);
 			
 			System.out.println("Ground atoms");
 			
@@ -38,6 +39,8 @@ public class GroudStoreTest {
 				System.out.println(atom.symbol.toString());
 				
 				// Iterate through all ground values of current atom
+				
+				// First approach (slower): update the ground store every time & count # true groundings directly
 				for (int ground_atom_id = 0; ground_atom_id < atom.getNumberOfGroundings(); ground_atom_id++) {
 					gs.flipAtom(atom.symbol, ground_atom_id);
 					
@@ -51,6 +54,15 @@ public class GroudStoreTest {
 					gs.update(formula_list);
 					
 					// Cache in the count for later use
+				}
+				
+				// 2nd approach: count the number of false groundings increased
+				for (int ground_atom_id = 0; ground_atom_id < atom.getNumberOfGroundings(); ground_atom_id++) {
+					gs.flipAtom(atom.symbol, ground_atom_id);
+					
+					System.out.printf(": %.1f\n", original_count - gs.noOfFalseGroundingsIncreased(clause_id));
+					
+					gs.unflipAtom(atom.symbol, ground_atom_id);
 				}
 				System.out.println();
 			}
