@@ -353,7 +353,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 			this.update(clauseId);
 		}
 		// JTs have been re-calibrated now reset the changes
-		graphicalModel.getFunctions().get(lastFlippedSymbol).resetChangeEntry(lastFlippedAtomId);
+//		graphicalModel.getFunctions().get(lastFlippedSymbol).resetChangeEntry(lastFlippedAtomId);
 	}
 	
 	private void update(int clauseId) {

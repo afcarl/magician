@@ -47,7 +47,8 @@ public class GroudStoreTest {
 					
 					// Debug printing
 					System.out.printf("Flipped %d: %.1f\n", ground_atom_id, gs.noOfTrueGroundings(clause_id));
-					gs.unflipAtom(atom.symbol, ground_atom_id);
+					gs.flipAtom(atom.symbol, ground_atom_id);
+					gs.update(formula_list);
 					
 					// Cache in the count for later use
 				}
