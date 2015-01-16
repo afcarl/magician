@@ -31,7 +31,7 @@ public class GenerativeLearningTest {
 		
 		// Create a list of formulas containing current atom
 		List<WClause> formula_list = new ArrayList<WClause>();
-		for (WClause formula : mln.clauses) {
+		for (WClause formula : mln.getClauses()) {
 			for (Atom atom_flag : formula.atoms) {
 				if (atom_flag.symbol.parentId == atom.symbol.parentId) {
 					formula_list.add(formula);
@@ -48,7 +48,7 @@ public class GenerativeLearningTest {
 
 	/** Return the unnormalized probability associated with the world with 
 	 * 	the given ground atom flipped */
-	private static LogDouble unnormalizedFlippedProb(MLN mln, GroundAtom ga) {
+	private static LogDouble unnormalizedFlippedProb(MLN mln, Atom atom, int ground_atom_id) {
 		return new LogDouble(-1d);
 	}
 	
@@ -67,14 +67,14 @@ public class GenerativeLearningTest {
 	/** Learn weights for formulas based on given world (database file) */
 	public static void learnWeights(MLN mln) {
 //		while (true) {
-			for (WClause formula : mln.clauses) {
+			for (WClause formula : mln.getClauses()) {
 				double delta = 0;
 				int original_count = true_grouding_count.get(formula.toString());
 				
-				for (Atom a : formula.atoms) {
-					LogDouble original_prob = unnormalizedOriginalProb(mln, a);
+				for (Atom atom : formula.atoms) {
+					LogDouble original_prob = unnormalizedOriginalProb(mln, atom);
 					
-					for (GroundAtom ga : a) {
+					for (int ground_atom_id = 0; ground_atom_id < atom.getNumberOfGroundings(); ground_atom_id++) {
 						int flipped_count = true_grouding_count.get(formula.toString() + ga.toString());
 						LogDouble flipped_prob = unnormalizedOriginalProb(mln, ga);
 
@@ -108,7 +108,7 @@ public class GenerativeLearningTest {
 		// Printing out formulas
 		System.out.println();
 		System.out.println("Formulas:");
-		for (WClause wc : mln.clauses) {
+		for (WClause wc : mln.getClauses()) {
 			wc.print();
 			System.out.println(wc.weight);
 			for (Atom atom : wc.atoms) {

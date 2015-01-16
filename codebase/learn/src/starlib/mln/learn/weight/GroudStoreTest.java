@@ -27,8 +27,6 @@ public class GroudStoreTest {
 		System.out.println("Numbers of true groundings");
 		MLN mln = gs.getMln();
 		
-		gs.update();
-		
 		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 			mln.getClauses().get(clause_id).print();
 			System.out.printf("Clause %d's original count: %.1f\n", clause_id, gs.noOfTrueGroundings(clause_id));
