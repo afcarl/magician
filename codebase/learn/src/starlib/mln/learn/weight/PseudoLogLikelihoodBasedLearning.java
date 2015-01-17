@@ -1,5 +1,6 @@
 /*
- * 	GenerativeLearningTest.java
+ * 	PseudoLogLikelihoodBasedLearning.java
+ * 	Generative weight learning using Pseudo-log-likelihood
  *
  *  Created on: Jan 8, 2015
  *      Author: Tuan Anh Pham
@@ -11,7 +12,6 @@
 package starlib.mln.learn.weight;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -22,13 +22,10 @@ import starlib.mln.core.WClause;
 import starlib.mln.store.GroundStore;
 import starlib.mln.store.GroundStoreFactory;
 
-public class GenerativeLearningTest {
+public class PseudoLogLikelihoodBasedLearning {
 	// Store counts of true groundings in a Hash Table for synchronized access
 	static Hashtable<String, Double> true_grouding_count = new Hashtable<String, Double>();
 	static GroundStore gs;
-	
-	// Test storing counts in an ArrayList
-	static List<List<Double>> true_count;
 
 	/** Return the unnormalized probability associated with the original world */
 	private static LogDouble unnormalizedOriginalProb(Atom atom) {
@@ -72,9 +69,6 @@ public class GenerativeLearningTest {
 		// Count # true groundings
 		System.out.println("Numbers of true groundings");
 		MLN mln = gs.getMln();
-		
-		// Initialize the true ground store
-		true_count = new ArrayList<List<Double>>(mln.getClauses().size());
 
 		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 			WClause formula = mln.getClause(clause_id);
@@ -82,10 +76,6 @@ public class GenerativeLearningTest {
 			// Compute and cache the count of the original formula
 			double original_count = gs.noOfTrueGroundings(clause_id);
 			true_grouding_count.put(formula.toString(), original_count);
-			
-			// Initialize the true ground store for the current formula
-			List<Double> formula_counts = new ArrayList<Double>();
-			
 
 			// Iterate through all atoms
 			for (Atom atom : mln.getClause(clause_id).atoms) {
@@ -105,7 +95,6 @@ public class GenerativeLearningTest {
 					gs.unflipAtom(atom.symbol, ground_atom_id);
 				}
 			}
-			true_count.add(clause_id, formula_counts);
 		}
 	}
 
@@ -192,4 +181,5 @@ public class GenerativeLearningTest {
 		// Update weights
 		learnWeights();
 	}
+
 }
