@@ -1,5 +1,6 @@
 /*
  * 	GenerativeLearningTest.java
+ *  Testing file
  *
  *  Created on: Jan 8, 2015
  *      Author: Tuan Anh Pham
@@ -11,8 +12,6 @@
 package starlib.mln.learn.weight;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 import starlib.gm.core.LogDouble;
@@ -23,22 +22,19 @@ import starlib.mln.store.GroundStore;
 import starlib.mln.store.GroundStoreFactory;
 
 public class GenerativeLearningTest {
-	// Store counts of true groundings in a Hash Table for synchronized access
-	static Hashtable<String, Double> true_grouding_count = new Hashtable<String, Double>();
+	// Storing counts in an array
+	static FormulaCounts[] true_count;
 	static GroundStore gs;
-	
-	// Test storing counts in an ArrayList
-	static List<List<Double>> true_count;
 
 	/** Return the unnormalized probability associated with the original world */
 	private static LogDouble unnormalizedOriginalProb(Atom atom) {
 		LogDouble exp = new LogDouble(0d, true);
-		
-		List<WClause> formula_list = gs.getMln().getClausesBySymbol(atom.symbol);
+		List<Integer> formula_id = gs.getMln().getClauseIdsBySymbol(atom.symbol);
 
 		// Loop through the list
-		for (WClause formula : formula_list) {
-			exp = exp.multiply(formula.weight.power(true_grouding_count.get(formula.toString())));
+		for (int clause_id : formula_id) {
+			exp = exp.multiply(gs.getMln().getClauses().get(clause_id).weight
+					.power(true_count[clause_id].getOriginalCount()));
 		}
 		return exp;
 	}
@@ -47,14 +43,14 @@ public class GenerativeLearningTest {
 	 * Return the unnormalized probability associated with the world with the
 	 * given ground atom flipped
 	 */
-	private static LogDouble unnormalizedFlippedProb(Atom atom, int ground_atom_id) {
+	private static LogDouble unnormalizedFlippedProb(Atom atom, int ground_id) {
 		LogDouble exp = new LogDouble(0d, true);
-		List<WClause> formula_list = gs.getMln().getClausesBySymbol(atom.symbol);
+		List<Integer> formula_id = gs.getMln().getClauseIdsBySymbol(atom.symbol);
 
 		// Loop through the list
-		for (WClause formula : formula_list) {
-			exp = exp.multiply(formula.weight.power(true_grouding_count
-					.get(formula.toString() + atom.symbol.toString() + ground_atom_id)));
+		for (int clause_id : formula_id) {
+			exp = exp.multiply(gs.getMln().getClauses().get(clause_id).weight
+					.power(true_count[clause_id].getFlippedCount(atom, ground_id)));
 		}
 		return exp;
 	}
@@ -74,52 +70,55 @@ public class GenerativeLearningTest {
 		MLN mln = gs.getMln();
 		
 		// Initialize the true ground store
-		true_count = new ArrayList<List<Double>>(mln.getClauses().size());
+		true_count = new FormulaCounts[mln.getClauses().size()];
 
 		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 			WClause formula = mln.getClause(clause_id);
 			
 			// Compute and cache the count of the original formula
 			double original_count = gs.noOfTrueGroundings(clause_id);
-			true_grouding_count.put(formula.toString(), original_count);
 			
 			// Initialize the true ground store for the current formula
-			List<Double> formula_counts = new ArrayList<Double>();
-			
+			FormulaCounts formula_counts = new FormulaCounts(formula);
+			formula_counts.setOriginalCount(original_count);
 
 			// Iterate through all atoms
-			for (Atom atom : mln.getClause(clause_id).atoms) {
+			for (int atom_id = 0; atom_id < formula.atoms.size(); atom_id++) {
+				Atom atom = formula.atoms.get(atom_id);
 				
 				// Iterate through all ground values of current atom
-				for (int ground_atom_id = 0; ground_atom_id < atom
-						.getNumberOfGroundings(); ground_atom_id++) {
+				for (int ground_id = 0; ground_id < atom
+						.getNumberOfGroundings(); ground_id++) {
 
-					gs.flipAtom(atom.symbol, ground_atom_id);
+					gs.flipAtom(atom.symbol, ground_id);
 
 					// Compute and cache the count of the formula with the current
 					// ground atom flipped
 					double flipped_count = original_count - gs.noOfFalseGroundingsIncreased(clause_id);
-					true_grouding_count.put(formula.toString() 
-							+ atom.symbol.toString() + ground_atom_id, flipped_count);
+					formula_counts.setFlippedCount(atom_id, ground_id, flipped_count);
 
-					gs.unflipAtom(atom.symbol, ground_atom_id);
+					gs.unflipAtom(atom.symbol, ground_id);
 				}
 			}
-			true_count.add(clause_id, formula_counts);
+			
+			// Add counts of the current formula to the cache array
+			true_count[clause_id] = formula_counts;
 		}
 	}
 
-	/** Learn weights for formulas based on given world (database file) */
+	/** Learn weights for formulas based on the given world (database file) */
 	public static void learnWeights() {
 		MLN mln = gs.getMln();
-		
-		int iter = 1;
-		boolean converged = false;
-		double[] weight_change = new double[mln.getClauses().size()];
 		
 		// Parameters
 		int MAX_ITER = 1000;
 		double threshold = 0.00001;
+		
+		// Variables to check for convergence
+		boolean converged = false;
+		double[] weight_change = new double[mln.getClauses().size()];
+		
+		int iter = 1;
 		
 		// Loop until the weights converge or after a preset number of iterations
 		while (!converged && iter < MAX_ITER) {
@@ -132,18 +131,18 @@ public class GenerativeLearningTest {
 				double delta = 0;
 				
 				// True grounding count of the original formula
-				double original_count = true_grouding_count.get(formula.toString());
-	
-				for (Atom atom : formula.atoms) {
+				double original_count = true_count[clause_id].getOriginalCount();
+
+				for (int atom_id = 0; atom_id < formula.atoms.size(); atom_id++) {
+					Atom atom = formula.atoms.get(atom_id);
 					LogDouble original_prob = unnormalizedOriginalProb(atom);
 	
-					for (int ground_atom_id = 0; ground_atom_id < atom
-							.getNumberOfGroundings(); ground_atom_id++) {
+					for (int ground_id = 0; ground_id < atom
+							.getNumberOfGroundings(); ground_id++) {
 						
 						// True grounding count of the formula with the current ground atom flipped
-						double flipped_count = true_grouding_count.get(formula
-								.toString() + atom.symbol.toString() + ground_atom_id);
-						LogDouble flipped_prob = unnormalizedFlippedProb(atom, ground_atom_id);
+						double flipped_count = true_count[clause_id].getFlippedCount(atom_id, ground_id);
+						LogDouble flipped_prob = unnormalizedFlippedProb(atom, ground_id);
 	
 						// Match the counts and probabilities to compute the weight change
 						delta += original_count
@@ -176,6 +175,7 @@ public class GenerativeLearningTest {
 		}
 	}
 
+	/** Empirical tests */
 	public static void main(String[] args) throws FileNotFoundException {
 		// Parse the MLN file and the DB file into an MLN object
 //		String mln_file = "love_mln.txt";
