@@ -113,6 +113,7 @@ public class PseudoLogLikelihoodBasedLearning {
 		// Parameters
 		int MAX_ITER = 1000;
 		double threshold = 0.00001;
+		double learning_rate = 0.01; // fixed learning rate
 		
 		// Variables to check for convergence
 		boolean converged = false;
@@ -124,7 +125,7 @@ public class PseudoLogLikelihoodBasedLearning {
 		while (!converged && iter < MAX_ITER) {
 			System.out.println("Iteration " + iter);
 			
-			double learning_rate = 1.0 / iter;
+//			double learning_rate = 1.0 / iter;
 			
 			for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 				WClause formula = mln.getClause(clause_id);
@@ -180,8 +181,10 @@ public class PseudoLogLikelihoodBasedLearning {
 		// Parse the MLN file and the DB file into an MLN object
 //		String mln_file = "love_mln.txt";
 //		String db_file = "love_mln_db.txt";
-		String mln_file = "test.mln";
-		String db_file = "test.db";
+//		String mln_file = "test.mln";
+//		String db_file = "test.db";
+		String mln_file = "webkb-magician.mln";
+		String db_file = "webkb-0.txt";
 
 		/** Learning */
 		System.out.println("Learn Weights");

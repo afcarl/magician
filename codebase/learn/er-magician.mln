@@ -1,0 +1,27 @@
+#domains
+author={0, ..., 87}
+title={0, ..., 208}
+venue={0, ..., 402}
+bib={0, ..., 1994}
+
+#predicates
+Author(bib, author)
+Title(bib, title)
+Venue(bib, venue)
+SameAuthor(author, author)
+SameTitle(title, title)
+SameVenue(venue, venue)
+SameBib(bib, bib)
+
+#formulas
+( !Author(x,y) | !Author(z,u) | !SameAuthor(y,u) | SameBib(x,z)) ::0
+( !Title(x,y) | !Title(z,u) | !SameTitle(y,u) | SameBib(x,z)) ::0
+( !Venue(x,y) | !Venue(z,u) | !SameVenue(y,u) | SameBib(x,z)) ::0
+( !SameBib(x,y) | !SameBib(y,z) | !SameBib(z,x)) ::0
+( Author(x,y)) ::0
+( Title(x,y)) ::0
+( Venue(x,y)) ::0
+( SameVenue(y,u)) ::0
+( SameBib(x,y)) ::0
+( SameAuthor(y,u)) ::0
+( SameTitle(y,u)) ::0
