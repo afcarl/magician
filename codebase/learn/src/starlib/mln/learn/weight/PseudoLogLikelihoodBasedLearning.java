@@ -191,6 +191,9 @@ public class PseudoLogLikelihoodBasedLearning {
 		
 		// Compute all the counts required
 		computeCounts(mln_file, db_file);
+
+		System.out.println("Counts computed");
+		
 		
 		// Update weights
 		learnWeights();

@@ -49,6 +49,7 @@ public class JoinTreeInt implements CompiledStructure {
 		}
 		this.variables = new ArrayList<>(variableSet);
 		int variablesSize = this.variables.size();
+		int noOfFunctions = functions.size();
 		
 		edges = new ArrayList<>();
 		message_order = new ArrayList<>();
@@ -65,10 +66,11 @@ public class JoinTreeInt implements CompiledStructure {
 
 		noOfEffectiveNodes = variablesSize;
 		nodes = new JGNodeInt[variablesSize];
-		funct_to_node = new JGNodeInt[variablesSize];
 		var_to_node = new JGNodeInt[variablesSize];
 		samplingOrder = new JGNodeInt[variablesSize];
 
+		funct_to_node = new JGNodeInt[noOfFunctions];
+		
 		for(int i=0;i<variablesSize;i++)
 		{
 			nodes[i] = new JGNodeIntSS();
@@ -77,7 +79,7 @@ public class JoinTreeInt implements CompiledStructure {
 		
 		//Put the functions in the appropriate nodes
 		// First put the functions in the proper buckets
-		for(int i=0; i < functions.size(); i++)
+		for(int i=0; i < noOfFunctions; i++)
 		{
 			int pos = order.size();
 			IntFunction function = functions.get(i);
