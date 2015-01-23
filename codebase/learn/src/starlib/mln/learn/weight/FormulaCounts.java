@@ -18,8 +18,10 @@ import starlib.mln.core.WClause;
 
 public class FormulaCounts {
 	private WClause formula;
-	private double original_count;
-	private double[] flipped_counts;
+//	private double original_count;
+//	private double[] flipped_counts;
+	private int original_count;
+	private int[] flipped_counts;
 	
 	// Use for indexing for different atoms in the formula
 	private int[] start_index;
@@ -38,27 +40,32 @@ public class FormulaCounts {
 		}
 		
 		// Initialize number of true groundings for flipped formula
-		flipped_counts = new double[start_index[atom_count-1] + formula.atoms.get(atom_count-1).getNumberOfGroundings()];
+//		flipped_counts = new double[start_index[atom_count-1] + formula.atoms.get(atom_count-1).getNumberOfGroundings()];
+		flipped_counts = new int[start_index[atom_count-1] + formula.atoms.get(atom_count-1).getNumberOfGroundings()];
 	}
 	
-	public double getOriginalCount() {
+//	public double getOriginalCount() {
+	public int getOriginalCount() {
 		return original_count;
 	}
 	
-	public void setOriginalCount(double original_count) {
+//	public void setOriginalCount(double original_count) {
+	public void setOriginalCount(int original_count) {
 		this.original_count = original_count;
 	}
 	
 	/** Get the number of true groundings given the atom id RELATIVE to
 	 *  the current formula and the flipped grounding id of that atom */
-	public double getFlippedCount(int atom_id, int ground_id) {
+//	public double getFlippedCount(int atom_id, int ground_id) {
+	public int getFlippedCount(int atom_id, int ground_id) {
 		return flipped_counts[start_index[atom_id] + ground_id];
 	}
 	
 	/** Get the number of true groundings given the atom pointer and the
 	 *  flipped grounding id of that atom. 
 	 *  Requires looking for atom in formula */
-	public double getFlippedCount(Atom atom, int ground_id) {
+//	public double getFlippedCount(Atom atom, int ground_id) {
+	public int getFlippedCount(Atom atom, int ground_id) {
 		int atom_id = -1;
 		
 		// Look for the given atom in the current formula
@@ -73,7 +80,8 @@ public class FormulaCounts {
 
 	/** Set the number of true groundings given the atom id RELATIVE to
 	 *  the current formula and the flipped grounding id of that atom */
-	public void setFlippedCount(int atom_id, int ground_id, double flipped_count) {
+//	public void setFlippedCount(int atom_id, int ground_id, double flipped_count) {
+	public void setFlippedCount(int atom_id, int ground_id, int flipped_count) {
 		flipped_counts[start_index[atom_id] + ground_id] = flipped_count;
 	}
 

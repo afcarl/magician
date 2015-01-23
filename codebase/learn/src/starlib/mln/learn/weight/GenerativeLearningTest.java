@@ -71,20 +71,27 @@ public class GenerativeLearningTest {
 		
 		// Initialize the true ground store
 		true_count = new FormulaCounts[mln.getClauses().size()];
+		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
+			true_count[clause_id] = new FormulaCounts(mln.getClause(clause_id));
+		}
 
 		for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 			WClause formula = mln.getClause(clause_id);
 			
+			formula.print();
+			
 			// Compute and cache the count of the original formula
-			double original_count = gs.noOfTrueGroundings(clause_id);
+//			double original_count = gs.noOfTrueGroundings(clause_id);
+			int original_count = gs.noOfTrueGroundings(clause_id).intValue();
 			
 			// Initialize the true ground store for the current formula
-			FormulaCounts formula_counts = new FormulaCounts(formula);
-			formula_counts.setOriginalCount(original_count);
+			true_count[clause_id].setOriginalCount(original_count);
 
 			// Iterate through all atoms
 			for (int atom_id = 0; atom_id < formula.atoms.size(); atom_id++) {
 				Atom atom = formula.atoms.get(atom_id);
+				
+				System.out.println(atom.symbol);
 				
 				// Iterate through all ground values of current atom
 				for (int ground_id = 0; ground_id < atom
@@ -94,15 +101,13 @@ public class GenerativeLearningTest {
 
 					// Compute and cache the count of the formula with the current
 					// ground atom flipped
-					double flipped_count = original_count - gs.noOfFalseGroundingsIncreased(clause_id);
-					formula_counts.setFlippedCount(atom_id, ground_id, flipped_count);
+//					double flipped_count = original_count - gs.noOfFalseGroundingsIncreased(clause_id);
+					int flipped_count = original_count - gs.noOfFalseGroundingsIncreased(clause_id).intValue();
+					true_count[clause_id].setFlippedCount(atom_id, ground_id, flipped_count);
 
 					gs.unflipAtom(atom.symbol, ground_id);
 				}
 			}
-			
-			// Add counts of the current formula to the cache array
-			true_count[clause_id] = formula_counts;
 		}
 	}
 
@@ -113,6 +118,7 @@ public class GenerativeLearningTest {
 		// Parameters
 		int MAX_ITER = 1000;
 		double threshold = 0.00001;
+		double learning_rate = 0.01; // fixed learning rate
 		
 		// Variables to check for convergence
 		boolean converged = false;
@@ -124,7 +130,7 @@ public class GenerativeLearningTest {
 		while (!converged && iter < MAX_ITER) {
 			System.out.println("Iteration " + iter);
 			
-			double learning_rate = 1.0 / iter;
+//			double learning_rate = 1.0 / iter;
 			
 			for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 				WClause formula = mln.getClause(clause_id);
@@ -158,7 +164,7 @@ public class GenerativeLearningTest {
 				// Update weight of current formula
 				weight_change[clause_id] = learning_rate * delta;
 				formula.weight = new LogDouble(formula.weight.getLogValue() + learning_rate * delta, true);
-				System.out.println("Updated weight: " + formula.weight);
+//				System.out.println("Updated weight: " + formula.weight);
 			}
 			
 			iter++;
@@ -171,6 +177,12 @@ public class GenerativeLearningTest {
 					break;
 				}
 			}
+		}
+		
+		// Final weights
+		for (WClause formula : mln.getClauses()) {
+			formula.print();
+			System.out.println(formula.weight);
 			System.out.println();
 		}
 	}
@@ -182,14 +194,31 @@ public class GenerativeLearningTest {
 //		String db_file = "love_mln_db.txt";
 		String mln_file = "test.mln";
 		String db_file = "test.db";
-
+//		String mln_file = "webkb-magician.mln";
+//		String db_file = "webkb-0.txt";
+		
+//		String mln_file = args[0];
+//		String db_file = args[1];
+		
+		// Time
+		long startTime = System.nanoTime();
+		
 		/** Learning */
-		System.out.println("Learn Weights");
+		System.out.println("Computing Counts");
 		
 		// Compute all the counts required
 		computeCounts(mln_file, db_file);
 		
+		long countTime = System.nanoTime();
+		System.out.printf("Counting time: %d\n\n", (countTime - startTime) / 1000000);
+
+		System.out.println("Counts computed");
+		System.out.println("Learn Weights");
+		
 		// Update weights
 		learnWeights();
+		
+		long learnTime = System.nanoTime();
+		System.out.printf("Counting time: %d", (learnTime - countTime) / 1000000);
 	}
 }
