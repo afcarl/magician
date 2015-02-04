@@ -1,0 +1,82 @@
+#domains
+web={0, ..., 4167}
+word={0, ..., 773}
+
+#predicates
+Course(web)
+Department(web)
+Person(web)
+Faculty(web)
+ResearchProject(web)
+Staff(web)
+Student(web)
+HasWord(word, web)
+Linked(web, web)
+
+#formulas
+( !HasWord(w,p) | Course(p)) ::0
+( !HasWord(w,p) | Department(p)) ::0
+( !HasWord(w,p) | Person(p)) ::0
+( !HasWord(w,p) | Faculty(p)) ::0
+( !HasWord(w,p) | ResearchProject(p)) ::0
+( !HasWord(w,p) | Staff(p)) ::0
+( !HasWord(w,p) | Student(p)) ::0
+( !Course(x) | !Linked(x,y) | Course(y)) ::0
+( !Course(x) | !Linked(x,y) | Department(y)) ::0
+( !Course(x) | !Linked(x,y) | Person(y)) ::0
+( !Course(x) | !Linked(x,y) | Faculty(y)) ::0
+( !Course(x) | !Linked(x,y) | ResearchProject(y)) ::0
+( !Course(x) | !Linked(x,y) | Staff(y)) ::0
+( !Course(x) | !Linked(x,y) | Student(y)) ::0
+( !Department(x) | !Linked(x,y) | Course(y)) ::0
+( !Department(x) | !Linked(x,y) | Department(y)) ::0
+( !Department(x) | !Linked(x,y) | Person(y)) ::0
+( !Department(x) | !Linked(x,y) | Faculty(y)) ::0
+( !Department(x) | !Linked(x,y) | ResearchProject(y)) ::0
+( !Department(x) | !Linked(x,y) | Staff(y)) ::0
+( !Department(x) | !Linked(x,y) | Student(y)) ::0
+( !Person(x) | !Linked(x,y) | Course(y)) ::0
+( !Person(x) | !Linked(x,y) | Department(y)) ::0
+( !Person(x) | !Linked(x,y) | Person(y)) ::0
+( !Person(x) | !Linked(x,y) | Faculty(y)) ::0
+( !Person(x) | !Linked(x,y) | ResearchProject(y)) ::0
+( !Person(x) | !Linked(x,y) | Staff(y)) ::0
+( !Person(x) | !Linked(x,y) | Student(y)) ::0
+( !Faculty(x) | !Linked(x,y) | Course(y)) ::0
+( !Faculty(x) | !Linked(x,y) | Department(y)) ::0
+( !Faculty(x) | !Linked(x,y) | Person(y)) ::0
+( !Faculty(x) | !Linked(x,y) | Faculty(y)) ::0
+( !Faculty(x) | !Linked(x,y) | ResearchProject(y)) ::0
+( !Faculty(x) | !Linked(x,y) | Staff(y)) ::0
+( !Faculty(x) | !Linked(x,y) | Student(y)) ::0
+( !ResearchProject(x) | !Linked(x,y) | Course(y)) ::0
+( !ResearchProject(x) | !Linked(x,y) | Department(y)) ::0
+( !ResearchProject(x) | !Linked(x,y) | Person(y)) ::0
+( !ResearchProject(x) | !Linked(x,y) | Faculty(y)) ::0
+( !ResearchProject(x) | !Linked(x,y) | ResearchProject(y)) ::0
+( !ResearchProject(x) | !Linked(x,y) | Staff(y)) ::0
+( !ResearchProject(x) | !Linked(x,y) | Student(y)) ::0
+( !Staff(x) | !Linked(x,y) | Course(y)) ::0
+( !Staff(x) | !Linked(x,y) | Department(y)) ::0
+( !Staff(x) | !Linked(x,y) | Person(y)) ::0
+( !Staff(x) | !Linked(x,y) | Faculty(y)) ::0
+( !Staff(x) | !Linked(x,y) | ResearchProject(y)) ::0
+( !Staff(x) | !Linked(x,y) | Staff(y)) ::0
+( !Staff(x) | !Linked(x,y) | Student(y)) ::0
+( !Student(x) | !Linked(x,y) | Course(y)) ::0
+( !Student(x) | !Linked(x,y) | Department(y)) ::0
+( !Student(x) | !Linked(x,y) | Person(y)) ::0
+( !Student(x) | !Linked(x,y) | Faculty(y)) ::0
+( !Student(x) | !Linked(x,y) | ResearchProject(y)) ::0
+( !Student(x) | !Linked(x,y) | Staff(y)) ::0
+( !Student(x) | !Linked(x,y) | Student(y)) ::0
+( Course(x)) ::0
+( Department(x)) ::0
+( Person(x)) ::0
+( Faculty(x)) ::0
+( ResearchProject(x)) ::0
+( Staff(x)) ::0
+( Student(x)) ::0
+( HasWord(x,y)) ::0
+( Linked(x,y)) ::0
+( !Linked(x,y) | Linked(y,x)) ::0
