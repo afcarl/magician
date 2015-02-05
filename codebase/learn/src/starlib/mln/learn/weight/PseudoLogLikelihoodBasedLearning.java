@@ -12,11 +12,13 @@
 package starlib.mln.learn.weight;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 import starlib.gm.core.LogDouble;
 import starlib.mln.core.Atom;
 import starlib.mln.core.MLN;
+import starlib.mln.core.PredicateSymbol;
 import starlib.mln.core.WClause;
 import starlib.mln.store.GroundStore;
 import starlib.mln.store.GroundStoreFactory;
@@ -62,7 +64,7 @@ public class PseudoLogLikelihoodBasedLearning {
 	 */
 	private static void computeCounts(String mln_file, String db_file) throws FileNotFoundException {
 		// GroundStore creation
-		gs = GroundStoreFactory.createGraphModBasedGroundStore(mln_file, db_file);
+		gs = GroundStoreFactory.createGraphModBasedGroundStoreWithApproxCount(mln_file, db_file);
 		gs.update();
 
 		// Count # true groundings
@@ -86,9 +88,13 @@ public class PseudoLogLikelihoodBasedLearning {
 			// Initialize the true ground store for the current formula
 			true_count[clause_id].setOriginalCount(original_count);
 
+			List<PredicateSymbol> visitedSymbols = new ArrayList<>(formula.atoms.size());
 			// Iterate through all atoms
 			for (int atom_id = 0; atom_id < formula.atoms.size(); atom_id++) {
 				Atom atom = formula.atoms.get(atom_id);
+				
+				if(visitedSymbols.contains(atom.symbol))
+					continue;
 				
 				System.out.println(atom.symbol);
 				
@@ -105,6 +111,8 @@ public class PseudoLogLikelihoodBasedLearning {
 
 					gs.unflipAtom(atom.symbol, ground_id);
 				}
+				
+				visitedSymbols.add(atom.symbol);
 			}
 		}
 	}

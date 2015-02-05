@@ -30,6 +30,8 @@ public interface GroundStore {
 
 	public abstract void randomAssignment();
 
+	public abstract void randomAssignment(PredicateSymbol symbol);
+
 	public abstract Double noOfTrueGroundings(int clauseId);
 
 	public abstract Double noOfFalseGroundings(int clauseId);

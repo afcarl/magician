@@ -19,6 +19,7 @@ public class MLN {
 	
 	// Index to the data structures
 	private List<List<Integer>> symbolClauseMap = new ArrayList<List<Integer>>();
+	private int maximumClauseSize;
 	
 	public List<WClause> getClauses() {
 		return clauses;
@@ -32,11 +33,18 @@ public class MLN {
 		return clauses.size();
 	}
 
+	public int getMaximumClauseSize() {
+		return maximumClauseSize;
+	}
+	
 	public void addClause(WClause clause) {
 		for (Atom atom : clause.atoms) {
 			symbolClauseMap.get(atom.symbol.id).add(clauses.size());
 		}
 		this.clauses.add(clause);
+		if(clause.atoms.size() > maximumClauseSize) {
+			maximumClauseSize = clause.atoms.size();
+		}
 	}
 	
 	public void addAllClauses(List<WClause> clauses) {

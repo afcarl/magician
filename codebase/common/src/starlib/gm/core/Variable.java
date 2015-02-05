@@ -122,4 +122,19 @@ public class Variable implements Comparable<Variable> {
 		return domainSize;
 	}
 	
+	public static void instantiateVariables(List<Variable> variables, int address) {
+		// Instantiate the variables
+		Variable.setAddress(variables, address);
+		for (Variable var : variables) {
+			var.setValue(var.getValue());
+		}
+	}
+	
+	public static void freeVariables(List<Variable> variables) {
+		for (Variable var : variables) {
+			var.setAddressValue(null);
+			var.setValue(null);
+		}
+	}
+	
 }

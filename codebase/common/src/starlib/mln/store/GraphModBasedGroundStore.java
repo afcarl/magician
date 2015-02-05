@@ -11,17 +11,18 @@ import starlib.mln.core.MLN;
 import starlib.mln.core.PredicateSymbol;
 import starlib.mln.core.Term;
 import starlib.mln.core.WClause;
-import starlib.mln.store.internal.CompiledStructure;
-import starlib.mln.store.internal.GlobalContext;
+import starlib.mln.store.clause.CompiledStructure;
+import starlib.mln.store.clause.CompiledStructureFactory;
 import starlib.mln.store.internal.IntFunction;
 import starlib.mln.store.internal.IntGraphMod;
-import starlib.mln.store.internal.jt.JoinTreeInt;
 
-public class GraphModBasedGroundStore implements GroundStore {
+public class GraphModBasedGroundStore<E extends CompiledStructure> implements GroundStore {
 	
 	protected static final int UNDEFINED = -1;
 	
 	protected Random random = new Random();
+	
+	protected CompiledStructureFactory<E> clauseStoreFactory;
 	
 	protected MLN mln;
 	
@@ -47,14 +48,18 @@ public class GraphModBasedGroundStore implements GroundStore {
 	
 	protected List<Integer> selfJoinedClauses;
 	
+	protected List<List<Integer>> selfJoinChangedFunctionIds;   
+	
 	// Parameters:
 	protected final double PARAM_REJECTION_SAMPLING_PROB = 0.4;   
 	
-	protected final int PARAM_REJECTION_TRY = 3;   
+	protected final int PARAM_REJECTION_TRY = 3;
+
 	
 	
-	public GraphModBasedGroundStore(MLN mln) {
+	public GraphModBasedGroundStore(MLN mln, CompiledStructureFactory<E> clauseStoreFactory) {
 		this.mln = mln;
+		this.clauseStoreFactory = clauseStoreFactory;
 	}
 	
 	@Override
@@ -67,7 +72,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 		joinTrees = new CompiledStructure[mln.numberOfClauses()];
 		satCounts = new double[mln.numberOfClauses()];
 		totalCounts = new double[mln.numberOfClauses()];
-		selfJoinedClauses = new ArrayList<>(mln.numberOfClauses());
+//		selfJoinedClauses = new ArrayList<>(mln.numberOfClauses());
 		
 		graphicalModel = new IntGraphMod();
 		
@@ -79,6 +84,9 @@ public class GraphModBasedGroundStore implements GroundStore {
 		
 		int[] symbolProcessed = new int[mln.numberOfSymbols()];
 		
+		selfJoinedClauses = new ArrayList<>(mln.numberOfClauses());
+		
+		selfJoinChangedFunctionIds = new ArrayList<>(mln.numberOfClauses());
 
 		// Create variables and functions
 		for (int i=0; i<mln.numberOfClauses(); i++) {
@@ -164,9 +172,6 @@ public class GraphModBasedGroundStore implements GroundStore {
 		graphicalModel.setVariables(variables);
 		
 		
-		// XXX: Hack:: Violates coupling. I am still gonna use it anyway t save computing same thing over and over
-		GlobalContext.init(mln.numberOfClauses());
-		
 		this.setUpInternalClauseStore();
 		this.incoporateEvidence();
 	}
@@ -189,7 +194,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 
 				junctionTreeFunctions.add(newFunction);
 			}
-			CompiledStructure jt = new JoinTreeInt(i, junctionTreeFunctions);
+			CompiledStructure jt = clauseStoreFactory.create(i, junctionTreeFunctions);
 			joinTrees[i] = jt;
 			totalCounts[i] = Variable.getDomainSize(jt.getVariables());
 		}
@@ -243,7 +248,7 @@ public class GraphModBasedGroundStore implements GroundStore {
 	 */
 	@Override
 	public GroundStore clone() {
-		GraphModBasedGroundStore newKB = new GraphModBasedGroundStore(mln);
+		GraphModBasedGroundStore<E> newKB = new GraphModBasedGroundStore<>(mln, clauseStoreFactory);
 		
 		newKB.graphicalModel = new IntGraphMod();
 		newKB.graphicalModel.setType(graphicalModel.getType());
@@ -297,6 +302,20 @@ public class GraphModBasedGroundStore implements GroundStore {
 	
 	
 	@Override
+	public void randomAssignment(PredicateSymbol symbol) {
+		IntFunction function = graphicalModel.getFunctions().get(symbol.id);
+		int functionSize = function.getFunctionSize();
+
+		for (int j = 0; j < functionSize; j++) {
+			if(random.nextBoolean())
+				function.setTableEntry(1, j);
+			else 
+				function.setTableEntry(0, j);
+		}
+	}
+	
+	
+	@Override
 	public Double noOfTrueGroundings(int clauseId) {
 		return (double) satCounts[clauseId];
 	}
@@ -324,9 +343,10 @@ public class GraphModBasedGroundStore implements GroundStore {
 			// Self-Join case
 			selfJoinFlipped = true;
 			selfJoinedClauses.add(clauseId);
+			selfJoinChangedFunctionIds.add(changedFunctionIdList);
 
 			double oldZ = jt.getZ();
-			jt.reCalibrateAll();
+			jt.reCalibrate(changedFunctionIdList, lastFlippedAtomId);
 			double newZ = jt.getZ();
 			
 			return newZ - oldZ;
@@ -478,12 +498,15 @@ public class GraphModBasedGroundStore implements GroundStore {
 		graphicalModel.getFunctions().get(symbol.id).toggleTableEntry(atomId);
 		graphicalModel.getFunctions().get(symbol.id).resetChangeEntry(atomId);
 		if (selfJoinFlipped) {
-			for (Integer clauseId : selfJoinedClauses) {
-				CompiledStructure jt = joinTrees[clauseId];
-				jt.reCalibrateAll();
+			// Recalibrate all the self-joined junction trees
+			for (int i = 0; i < selfJoinedClauses.size(); i++) {
+				CompiledStructure jt = joinTrees[selfJoinedClauses.get(i)];
+				jt.reCalibrate(selfJoinChangedFunctionIds.get(i), atomId);
 			}
-			selfJoinedClauses.clear();
+			
 			selfJoinFlipped = false;
+			selfJoinedClauses.clear();
+			selfJoinChangedFunctionIds.clear();
 		}
 		lastFlippedSymbol = UNDEFINED;
 		lastFlippedAtomId = UNDEFINED;

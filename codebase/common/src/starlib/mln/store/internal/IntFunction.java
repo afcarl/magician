@@ -129,7 +129,7 @@ public class IntFunction {
 		Collections.reverse(multipliers);
 	}
 	
-	private int getAddress() {
+	public int getAddress() {
 		int address = 0;
 		
 		int variableSize = variables.size();
@@ -511,10 +511,10 @@ public class IntFunction {
 	 * @param functions
 	 * @param outFunction
 	 */
-	public static void multiplyAndMarginalizeInPlace(List<IntFunction> functions, IntFunction outFunction) 
+	public static void multiplyAndMarginalizeInPlace(final List<IntFunction> functions, final IntFunction outFunction) 
 	{
 		// Compute the appropriate variables from the functions
-		int num_functions = functions.size();
+		final int num_functions = functions.size();
 		if(num_functions==0)
 			return;
 		
@@ -526,106 +526,45 @@ public class IntFunction {
 		
 		calculateVariables(functions, outFunction, freeFunctionVars, all_variables, nonOutFunctionVariables, nonFnVarValues);
 		
-		int freeVarDomainSize = Variable.getDomainSize(freeFunctionVars);
+		// Use Gray-Code to visit the out-function addresses and set zero as value
+		List<IntFunction> outFunctionAsList = new ArrayList<>(1);
+		outFunctionAsList.add(outFunction);
 		
-		for (int i = 0; i < freeVarDomainSize; i++) {
-			//Project the new set of variables in existing functions
-			Variable.setAddress(freeFunctionVars, i);
-			int newEntry = outFunction.getAddress();
-			outFunction.table[newEntry] = 0; // Initialize to zero before doing an addition
-		}
-		
-
-		int num_effective_variables = all_variables.size();
-
-		// Initialize variables for gray code implementation
-		int[] n = new int[num_effective_variables + 1]; /* the maximum for each digit */
-		int[] g = new int[num_effective_variables + 1]; /* the Gray code */
-		int[] u = new int[num_effective_variables + 1]; /* +1 or −1 */
-
-		int flippedIndex = 0;  // The last flipped index for Gray code
-		int g_plus_u; // Temporary variable to compute Gray code
-		
-		// Addresses corresponding to different functions
-		int[] functionAdresses = new int[num_functions+1];
-		Variable.setAddress(all_variables, 0); // Initialize starting address as zero
-		for (int i = 0; i < num_functions; i++) {
-			functionAdresses[i] = functions.get(i).getAddress();
-		}
-		functionAdresses[num_functions] = outFunction.getAddress(); // Last index is for out-function
-		
-		// Multipliers corresponding to different functions projected according to variable ordering in allVar
-		int[][] projectedFunctionMultipliers = new int[num_functions + 1][num_effective_variables];
-		for (int i = 0; i < num_functions; i++) {
-			IntFunction function = functions.get(i);
-			for (int j = 0; j < all_variables.size(); j++) {
-				Variable variable = all_variables.get(j);
-				int variableIndex = function.variables.indexOf(variable);
-				if(variableIndex == -1)
-					projectedFunctionMultipliers[i][j] = 0; // Variable not found. No effect
-				else 
-					projectedFunctionMultipliers[i][j] = function.multipliers.get(variableIndex); // Project pre-computed multiplier
+		GrayCodeFunctionVisitor outFunctionVisitor = new GrayCodeFunctionVisitor(freeFunctionVars, outFunctionAsList) {
+			@Override
+			protected void visitAddress() {
+				int newEntry = this.getFunctionAddress(0); // Only one function, get the current address for it
+				outFunction.table[newEntry] = 0; // Initialize to zero before doing an addition
 			}
-		}
+		};
+		outFunctionVisitor.visit();
 		
-		// Last index is for out-function
-		for (int j = 0; j < all_variables.size(); j++) {
-			Variable variable = all_variables.get(j);
-			int variableIndex = outFunction.variables.indexOf(variable);
-			if(variableIndex == -1)
-				projectedFunctionMultipliers[num_functions][j] = 0; // Variable not found. No effect
-			else 
-				projectedFunctionMultipliers[num_functions][j] = outFunction.multipliers.get(variableIndex); // Project pre-computed multiplier
-		}
-
-		for (int i = 0; i < num_effective_variables; i++) {
-			g[i] = 0;
-			u[i] = 1;
-			n[i] = all_variables.get(i).getDomainSize();  // Domain size of each variables
-		}
-		g[num_effective_variables] = 0;
-		u[num_effective_variables] = 1;
-		if(num_effective_variables > 0)
-			n[num_effective_variables] = n[num_effective_variables-1];
-		else
-			n[num_effective_variables] = 1; 
+		// Use Gray-Code to visit the function addresses
+		List<IntFunction> all_functions = new ArrayList<>(functions.size() + 1);
+		all_functions.addAll(functions);
+		all_functions.add(outFunction);
 		
-		while (g[num_effective_variables] == 0) {
-			
-			// Visit the gray coded address locations
-			int value = 1;
-			for (int i = 0; i < num_functions; i++) {
-				int functionEntry = functionAdresses[i];
-				IntFunction f = functions.get(i);
-				if(f.negated) {
-					value *= (1 - f.table[functionEntry]);
-				} else {
-					value *= f.table[functionEntry];
+		GrayCodeFunctionVisitor visitor = new GrayCodeFunctionVisitor(all_variables, all_functions) {
+			@Override
+			protected void visitAddress() {
+				// Visit the gray coded address locations
+				int value = 1;
+				for (int i = 0; i < num_functions; i++) {
+					int functionEntry = this.getFunctionAddress(i);
+					IntFunction f = functions.get(i);
+					if(f.negated) {
+						value *= (1 - f.table[functionEntry]);
+					} else {
+						value *= f.table[functionEntry];
+					}
 				}
+		        
+				int newEntry = this.getFunctionAddress(num_functions);
+				outFunction.table[newEntry] += value; //Do an addition
 			}
-	        
-			int newEntry = functionAdresses[num_functions];
-			outFunction.table[newEntry] += value; //Do an addition
-			if(num_effective_variables == 0) {
-				// All addresses visited
-				return;
-			}
-			
-			flippedIndex = 0; /* enumerate next Gray code */
-			g_plus_u = g[0] + u[0];
-			while ((g_plus_u >= n[flippedIndex]) || (g_plus_u < 0)) {
-				u[flippedIndex] = -u[flippedIndex];
-				flippedIndex++;
-				g_plus_u = g[flippedIndex] + u[flippedIndex];
-			}
-			g[flippedIndex] = g_plus_u;
+		};
+		visitor.visit();
 
-			// Update addresses
-			for (int i = 0; g[num_effective_variables] == 0 && i < functionAdresses.length; i++) {
-				functionAdresses[i] += projectedFunctionMultipliers[i][flippedIndex] * u[flippedIndex];
-			}
-		}
-				
 		// Now reset the evidence on non-out-function variables
 		resetEvidence(nonOutFunctionVariables, nonFnVarValues);
 	}
@@ -710,6 +649,7 @@ public class IntFunction {
 		int index = 0;
 		for (Variable nonFnVariable : nonOutFunctionVariables) {
 			nonFnVariable.setValue(nonFnVarValues.get(index));
+			nonFnVariable.setAddressValue(null);
 			index++;
 		}
 	}
@@ -759,5 +699,259 @@ public class IntFunction {
 			return constantValue;
 		else 
 			return ParallelUtil.sum(table);
+	}
+	
+	/**
+	 * outFunction is already created, just modify the new entries using the change addresses
+	 * Address of change for all the functions are provided through functionWiseChangedAddresses.
+	 * It is assumed that a value is changed only in a single position, also if nothing is changed 
+	 * for a function a null is provided. This method acts similar to multiplyAndMarginalizeInPlace
+	 * however it first calculates the addresses which would be visited more than once due to 
+	 * different function changes and it ensures that those addresses are visited only once.
+	 * 
+	 * @param functions
+	 * @param outFunction
+	 * @param functionWiseChangedAddresses
+	 */
+	public static void multiplyAndMarginalizeInPlaceForMultipleChange(final List<IntFunction> functions, final IntFunction outFunction, List<Integer> functionWiseChangedAddresses) 
+	{
+		// Compute the appropriate variables from the functions
+		final int num_functions = functions.size();
+		if(num_functions==0)
+			return;
+		
+		Integer[] outFunctionVarValuesForOverlapAddress = new Integer[outFunction.variables.size()];
+		int overLapAddressSize  = 1;
+		
+		// First clear the table values at out-function
+		for (int i = 0; i < functionWiseChangedAddresses.size(); i++) {
+			Integer changedAddress = functionWiseChangedAddresses.get(i);
+			if(changedAddress == null)
+				continue; //Nothing changed
+			
+			IntFunction function = functions.get(i);
+			
+			// Free variables in out function, ie- out function variables that do not appear in function 
+			List<Variable> freeFunctionVars = new ArrayList<>(outFunction.variables);
+			freeFunctionVars.removeAll(function.variables);
+
+			// Instantiated variables in out function, ie- intersection of out function variables and function variable 
+			List<Variable> instantiatedFunctionVars = new ArrayList<>(outFunction.variables);
+			instantiatedFunctionVars.retainAll(function.variables);
+			
+			// Set the changed address into function variables
+			Variable.instantiateVariables(function.variables, changedAddress);
+
+			// Compute the variable-values for overlapped addresses
+			for (int j = 0; j < outFunctionVarValuesForOverlapAddress.length; j++) {
+				Variable variable = outFunction.variables.get(j);
+				
+				if(variable.isInstantiated()) {
+					
+					int variableValue = variable.getValue();
+					Integer savedValue = outFunctionVarValuesForOverlapAddress[j];
+					
+					if(savedValue == null || savedValue.equals(variableValue))
+						outFunctionVarValuesForOverlapAddress[j] = variable.getValue();
+					else {
+						// Conflict! There is no overlap
+						outFunctionVarValuesForOverlapAddress = null; // Free array
+						overLapAddressSize = 0;
+						break;
+					}
+				}
+			}
+			
+			// Use Gray-Code to visit the out-function addresses and set zero as value
+			List<IntFunction> outFunctionAsList = new ArrayList<>(1);
+			outFunctionAsList.add(outFunction);
+			
+			GrayCodeFunctionVisitor outFunctionVisitor = new GrayCodeFunctionVisitor(freeFunctionVars, outFunctionAsList) {
+				@Override
+				protected void visitAddress() {
+					int newEntry = this.getFunctionAddress(0); // Only one function, get the current address for it
+					outFunction.table[newEntry] = 0; // Initialize to zero before doing an addition
+				}
+			};
+			outFunctionVisitor.visit();
+			
+			Variable.freeVariables(function.variables);
+			Variable.freeVariables(outFunction.variables);
+		}
+		
+		// Compute the size of the overlapped address
+		for (int i = 0; overLapAddressSize > 0 && i < outFunctionVarValuesForOverlapAddress.length; i++) {
+			Variable variable = outFunction.variables.get(i);
+			Integer varValue = outFunctionVarValuesForOverlapAddress[i];
+			if(varValue != null) {
+				variable.setValue(varValue);
+			} else {
+				// Variable is not instantiated, we need to visit all possible assignments of it
+				overLapAddressSize *= variable.getDomainSize();
+			}
+		}
+		
+		// Store all the overlapped addresses, so that we visit them only once;
+		// Do NOT use GrayCode to visit as we want the addresses to be sorted
+		final int[] overLappedAddresses = new int[overLapAddressSize];
+		if(overLapAddressSize > 0) {
+			for (int i = 0; i < overLappedAddresses.length; i++) {
+				Variable.setAddress(outFunction.variables, i);
+				overLappedAddresses[i] = outFunction.getAddress();
+			}
+			Variable.freeVariables(outFunction.variables);
+		}
+		
+		//Perform the set union of all function scopes.
+		Set<Variable> union = new TreeSet<>();
+		for (IntFunction function : functions)
+			union.addAll(function.variables);
+		
+		List<Variable> all_variables = new ArrayList<>(union);
+
+		
+		// Compute the marginal value by visiting the changed functions one at a time, skipping the overlapped Addresses
+		for (int i = 0; i < functionWiseChangedAddresses.size(); i++) {
+			Integer changedAddress = functionWiseChangedAddresses.get(i);
+			if(changedAddress == null)
+				continue; //Nothing changed
+
+			IntFunction function = functions.get(i);
+
+			// Set the changed address into function variables
+			Variable.instantiateVariables(function.variables, changedAddress);
+			
+			// Instantiated variables in out function, ie- intersection of out function variables and function variable 
+			List<Variable> instantiatedFunctionVars = new ArrayList<>(outFunction.variables);
+			instantiatedFunctionVars.retainAll(function.variables);
+			
+			// Un-instantiate all the variables that do not belong to outFunction
+			List<Variable> nonOutFunctionVariables =  new ArrayList<>(union);
+			nonOutFunctionVariables.removeAll(outFunction.variables);
+			Variable.freeVariables(nonOutFunctionVariables);
+
+			// Compute free variables
+			List<Variable> freeVariables = new ArrayList<>(all_variables);
+			freeVariables.removeAll(instantiatedFunctionVars);
+			
+			// Use Gray-Code to visit the function addresses
+			List<IntFunction> all_functions = new ArrayList<>(functions.size() + 1);
+			all_functions.addAll(functions);
+			all_functions.add(outFunction);
+
+			GrayCodeFunctionVisitor visitor = new GrayCodeFunctionVisitor(freeVariables, all_functions) {
+				@Override
+				protected void visitAddress() {
+					// Visit the gray coded address locations
+					
+					// The address to be visited in outFunction
+					int newEntry = this.getFunctionAddress(num_functions);
+					if(Arrays.binarySearch(overLappedAddresses, newEntry) >= 0)
+						return; // The address is in overlap. Skip it
+					
+					int value = 1;
+					for (int i = 0; i < num_functions; i++) {
+						int functionEntry = this.getFunctionAddress(i);
+						IntFunction f = functions.get(i);
+						if(f.negated) 
+							value *= (1 - f.table[functionEntry]);
+						else
+							value *= f.table[functionEntry];
+					}
+					outFunction.table[newEntry] += value; //Do an addition
+				}
+			};
+			visitor.visit();
+
+			// Now reset the evidence on non-out-function variables
+			Variable.freeVariables(all_variables);
+		}
+		
+		// Compute the marginal value by visiting the changed functions one at a time, skipping the overlapped Addresses
+		for (int i = 0; i < overLappedAddresses.length; i++) {
+			int changedAddress = overLappedAddresses[i];
+
+			// Set the changed address into function variables
+			Variable.instantiateVariables(outFunction.variables, changedAddress);
+			
+			// Compute free variables
+			List<Variable> freeVariables = new ArrayList<>(all_variables);
+			freeVariables.removeAll(outFunction.variables);
+			
+			// Use Gray-Code to visit the function addresses
+			List<IntFunction> all_functions = new ArrayList<>(functions.size() + 1);
+			all_functions.addAll(functions);
+			all_functions.add(outFunction);
+
+			GrayCodeFunctionVisitor visitor = new GrayCodeFunctionVisitor(freeVariables, all_functions) {
+				@Override
+				protected void visitAddress() {
+					// Visit the gray coded address locations
+					
+					// The address to be visited in outFunction
+					int newEntry = this.getFunctionAddress(num_functions);
+					
+					int value = 1;
+					for (int i = 0; i < num_functions; i++) {
+						int functionEntry = this.getFunctionAddress(i);
+						IntFunction f = functions.get(i);
+						if(f.negated) 
+							value *= (1 - f.table[functionEntry]);
+						else 
+							value *= f.table[functionEntry];
+					}
+					outFunction.table[newEntry] += value; //Do an addition
+				}
+			};
+			visitor.visit();
+
+			// Now reset the evidence on non-out-function variables
+			Variable.freeVariables(all_variables);
+		}
+	}
+	
+	public static void main(String[] args) {
+		Variable x = new Variable(0, 2);
+		Variable y = new Variable(1, 2);
+//		Variable z = new Variable(2, 2);
+		
+		List<Variable> vars1 = new ArrayList<>();
+		vars1.add(x);
+		vars1.add(y);
+		
+		IntFunction f1 = new IntFunction(vars1);
+		f1.table[1] = 1;
+		f1.table[2] = 1;
+		f1.table[3] = 1;
+		
+		List<Variable> vars2 = new ArrayList<>();
+		vars2.add(y);
+		vars2.add(x);
+		
+		IntFunction f2 = new IntFunction(vars2);
+		f2.table[1] = 1;
+		f2.table[2] = 1;
+		f2.table[3] = 1;
+		
+		List<Variable> vars3 = new ArrayList<>();
+		vars3.add(x);
+		vars3.add(y);
+		
+		IntFunction f3 = new IntFunction(vars3);
+		f3.table[0] = -1;
+		f3.table[1] = -1;
+		f3.table[2] = -1;
+		f3.table[3] = -1;
+		
+		List<IntFunction> functions = new ArrayList<>();
+		functions.add(f1);
+		functions.add(f2);
+		
+		List<Integer> changedAddressList = new ArrayList<>();
+		changedAddressList.add(2);
+		changedAddressList.add(2);
+		
+		multiplyAndMarginalizeInPlaceForMultipleChange(functions, f3, changedAddressList);
+		System.out.println(Arrays.toString(f3.table));
 	}
 }
