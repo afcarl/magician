@@ -8,7 +8,7 @@ B(dom1, dom2)
 C(dom1, dom1)
 
 #formulas
-( B(t, c)) ::0.03
-( A(s, c)) ::0.01
-( !C(s, j)) ::0.05
-( !B(t, c) | !A(s, c) |  C(s, j)) ::0.02
+( B(t, c)) ::0
+( A(s, c)) ::0
+( !C(s, j)) ::0
+( !B(t, c) | !A(s, c) |  C(s, j)) ::0

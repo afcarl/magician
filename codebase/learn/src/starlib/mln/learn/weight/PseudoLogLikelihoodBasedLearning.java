@@ -122,8 +122,9 @@ public class PseudoLogLikelihoodBasedLearning {
 		MLN mln = gs.getMln();
 		
 		// Parameters
-		int MAX_ITER = 1000;
-		double threshold = 0.00001;
+//		int MAX_ITER = 1000;
+//		double threshold = 0.005;
+		double percent_change_threshold = 0.001;
 		double learning_rate = 0.01; // fixed learning rate
 		
 		// Variables to check for convergence
@@ -133,7 +134,8 @@ public class PseudoLogLikelihoodBasedLearning {
 		int iter = 1;
 		
 		// Loop until the weights converge or after a preset number of iterations
-		while (!converged && iter < MAX_ITER) {
+//		while (!converged && iter < MAX_ITER) {
+		while (!converged) {
 			System.out.println("Iteration " + iter);
 			
 //			double learning_rate = 1.0 / iter;
@@ -174,11 +176,22 @@ public class PseudoLogLikelihoodBasedLearning {
 			}
 			
 			iter++;
+			
+			// Print weights after each iteration
+			System.out.println("\nWeights: ");
+			for (WClause formula : mln.getClauses()) {
+				formula.print();
+				System.out.println(formula.weight);
+				System.out.println();
+			}
+			System.out.println();
 
 			// Check for weight convergence
 			converged = true;
 			for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
-				if (weight_change[clause_id] > threshold) {
+				if (mln.getClause(clause_id).weight.getLogValue() != 0 &&
+					Math.abs(weight_change[clause_id]) / mln.getClause(clause_id).weight.getLogValue()
+						> percent_change_threshold) {
 					converged = false;
 					break;
 				}
@@ -186,6 +199,7 @@ public class PseudoLogLikelihoodBasedLearning {
 		}
 		
 		// Final weights
+		System.out.println("\nFinal weights: ");
 		for (WClause formula : mln.getClauses()) {
 			formula.print();
 			System.out.println(formula.weight);
@@ -198,13 +212,13 @@ public class PseudoLogLikelihoodBasedLearning {
 		// Parse the MLN file and the DB file into an MLN object
 //		String mln_file = "love_mln.txt";
 //		String db_file = "love_mln_db.txt";
-//		String mln_file = "test.mln";
-//		String db_file = "test.db";
+		String mln_file = "test.mln";
+		String db_file = "test.db";
 //		String mln_file = "webkb-magician.mln";
 //		String db_file = "webkb-0.txt";
 		
-		String mln_file = args[0];
-		String db_file = args[1];
+//		String mln_file = args[0];
+//		String db_file = args[1];
 		
 		// Time
 		long startTime = System.nanoTime();
@@ -216,15 +230,15 @@ public class PseudoLogLikelihoodBasedLearning {
 		computeCounts(mln_file, db_file);
 		
 		long countTime = System.nanoTime();
-		System.out.printf("Counting time: %d\n\n", (countTime - startTime) / 1000000);
+		System.out.printf("Counting time: %f seconds\n\n", (countTime - startTime) / 1000000000.0);
 
-		System.out.println("Counts computed");
-		System.out.println("Learn Weights");
+		System.out.println("Counts computed\n");
+		System.out.println("Learning Weights\n");
 		
 		// Update weights
 		learnWeights();
 		
 		long learnTime = System.nanoTime();
-		System.out.printf("Counting time: %d", (learnTime - countTime) / 1000000);
+		System.out.printf("Learning time: %fseconds\n", (learnTime - countTime) / 1000000000.0);
 	}
 }
