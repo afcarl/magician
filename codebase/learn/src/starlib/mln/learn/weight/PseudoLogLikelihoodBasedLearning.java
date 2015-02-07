@@ -53,6 +53,7 @@ public class PseudoLogLikelihoodBasedLearning {
 		for (int clause_id : formula_id) {
 			exp = exp.multiply(gs.getMln().getClauses().get(clause_id).weight
 					.power(true_count[clause_id].getFlippedCount(atom, ground_id)));
+//			System.out.println(exp + " " + gs.getMln().getClauses().get(clause_id).weight);
 		}
 		return exp;
 	}
@@ -125,6 +126,7 @@ public class PseudoLogLikelihoodBasedLearning {
 //		int MAX_ITER = 1000;
 //		double threshold = 0.005;
 		double percent_change_threshold = 0.001;
+		double zero_threshold = Math.exp(-100);
 		double learning_rate = 0.01; // fixed learning rate
 		
 		// Variables to check for convergence
@@ -142,6 +144,8 @@ public class PseudoLogLikelihoodBasedLearning {
 			
 			for (int clause_id = 0; clause_id < mln.getClauses().size(); clause_id++) {
 				WClause formula = mln.getClause(clause_id);
+				formula.print();
+				
 				double delta = 0;
 				
 				// True grounding count of the original formula
@@ -150,7 +154,7 @@ public class PseudoLogLikelihoodBasedLearning {
 				for (int atom_id = 0; atom_id < formula.atoms.size(); atom_id++) {
 					Atom atom = formula.atoms.get(atom_id);
 					LogDouble original_prob = unnormalizedOriginalProb(atom);
-	
+					
 					for (int ground_id = 0; ground_id < atom
 							.getNumberOfGroundings(); ground_id++) {
 						
@@ -159,31 +163,52 @@ public class PseudoLogLikelihoodBasedLearning {
 						LogDouble flipped_prob = unnormalizedFlippedProb(atom, ground_id);
 	
 						// Match the counts and probabilities to compute the weight change
-						delta += original_count
-								- ((original_prob.multiply(new LogDouble(
-										original_count * 1.0))
-										.add(flipped_prob.multiply(new LogDouble(
-												flipped_count * 1.0))))
+//						delta += original_count
+//								- ((original_prob.multiply(new LogDouble(original_count * 1.0))
+//										.add(flipped_prob.multiply(new LogDouble(flipped_count * 1.0))))
+//										.divide(original_prob.add(flipped_prob)))
+//										.getValue();
+						
+						double added;
+						double relative = original_prob.divide(flipped_prob).getValue();
+						
+						if (relative < zero_threshold) {
+							added = original_count - flipped_count;
+						} else if (relative > 1 / zero_threshold) {
+							added = 0d;
+						} else {						
+							added = original_count
+								- ((original_prob.multiply(new LogDouble(original_count * 1.0))
+										.add(flipped_prob.multiply(new LogDouble(flipped_count * 1.0))))
 										.divide(original_prob.add(flipped_prob)))
 										.getValue();
+						}
+						
+						delta += added;
+						
+						if (Double.isNaN(added)) {
+							System.out.println("Relative = " + relative);
+							System.out.println(original_prob.multiply(new LogDouble(original_count * 1.0)));
+							System.out.println(flipped_prob.multiply(new LogDouble(flipped_count * 1.0)));
+							System.out.println(original_prob);
+							System.out.println(flipped_prob);
+							System.out.println(original_prob.add(flipped_prob));
+							System.out.println("Added value: " + added);
+							break;
+						}
 					}
 				}
 	
 				// Update weight of current formula
 				weight_change[clause_id] = learning_rate * delta;
-				formula.weight = new LogDouble(formula.weight.getLogValue() + learning_rate * delta, true);
-//				System.out.println("Updated weight: " + formula.weight);
-			}
-			
-			iter++;
-			
-			// Print weights after each iteration
-			System.out.println("\nWeights: ");
-			for (WClause formula : mln.getClauses()) {
-				formula.print();
+				formula.weight = new LogDouble(formula.weight.getLogValue() + weight_change[clause_id], true);
+				System.out.println("Delta: " + delta);
+				System.out.println("Weight change: " + weight_change[clause_id]);
 				System.out.println(formula.weight);
 				System.out.println();
 			}
+			
+			iter++;
 			System.out.println();
 
 			// Check for weight convergence
@@ -212,13 +237,13 @@ public class PseudoLogLikelihoodBasedLearning {
 		// Parse the MLN file and the DB file into an MLN object
 //		String mln_file = "love_mln.txt";
 //		String db_file = "love_mln_db.txt";
-		String mln_file = "test.mln";
-		String db_file = "test.db";
+//		String mln_file = "test.mln";
+//		String db_file = "test.db";
 //		String mln_file = "webkb-magician.mln";
 //		String db_file = "webkb-0.txt";
 		
-//		String mln_file = args[0];
-//		String db_file = args[1];
+		String mln_file = args[0];
+		String db_file = args[1];
 		
 		// Time
 		long startTime = System.nanoTime();

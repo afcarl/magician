@@ -39,8 +39,11 @@ public class LogDouble implements Comparable<LogDouble>, Serializable, Cloneable
             if(value == 0){
                 isZero = true;
                 return;
+            } else if (value < 0) {
+            	System.out.println("FUCKKKK");
+            	throw new IllegalArgumentException("Log of a negative number");
             }
-            this.logValue = Math.log(value);
+            else this.logValue = Math.log(value);
     	}
     }
 
@@ -51,9 +54,7 @@ public class LogDouble implements Comparable<LogDouble>, Serializable, Cloneable
     /**
      * Default constructor. Invisible.
      */
-    private LogDouble() {
-        
-    }
+    private LogDouble() {}
     
     /**
      * Copy constructor
@@ -69,10 +70,11 @@ public class LogDouble implements Comparable<LogDouble>, Serializable, Cloneable
         if(this.isZero || d.isZero)
             return ZERO;
         
-        LogDouble returnVal = new LogDouble();
-        returnVal.logValue = logValue + d.logValue;
-        
-        return returnVal;
+//        LogDouble returnVal = new LogDouble();
+//        returnVal.logValue = logValue + d.logValue;
+//        
+//        return returnVal;
+        return new LogDouble(logValue + d.logValue, true);
     }
     
     public double getLogValue() {
@@ -90,10 +92,11 @@ public class LogDouble implements Comparable<LogDouble>, Serializable, Cloneable
         if(d.isZero)
             throw new IllegalArgumentException("Argument 'divisor' is 0");
         
-        LogDouble returnVal = new LogDouble();
-        returnVal.logValue = logValue - d.logValue;
-        
-        return returnVal;
+//        LogDouble returnVal = new LogDouble();
+//        returnVal.logValue = logValue - d.logValue;
+//        
+//        return returnVal;
+        return new LogDouble(logValue - d.logValue, true);
     }
 
     public LogDouble add(LogDouble d){
@@ -111,21 +114,23 @@ public class LogDouble implements Comparable<LogDouble>, Serializable, Cloneable
         	offset = d.logValue;
         }
         
-        LogDouble returnVal = new LogDouble();
+//        LogDouble returnVal = new LogDouble();
+//        if(logDiff > 50.0d) {
+//        	returnVal.logValue = offset;
+//        	return returnVal;
+//        }
+//        
+//        returnVal.logValue = offset + Math.log(2 + Math.expm1(- logDiff));
+//        
+//        return returnVal;
+        
         if(logDiff > 50.0d) {
-        	returnVal.logValue = offset;
-        	return returnVal;
+        	return new LogDouble(offset, true);
         }
         
-        returnVal.logValue = offset + Math.log(2 + Math.expm1(- logDiff));
-        
-        return returnVal;
+        return new LogDouble(offset + Math.log(2 + Math.expm1(- logDiff)), true);
     }
     
-//    public LogDouble subtract(LogDouble d) {
-//    	
-//    }
-
     @Override
     public int compareTo(LogDouble t) {
         if(this.isZero && t.isZero){
@@ -176,10 +181,11 @@ public class LogDouble implements Comparable<LogDouble>, Serializable, Cloneable
         if(d == 0)
             return ONE;
         
-        LogDouble returnVal = new LogDouble();
-        returnVal.logValue = logValue * d;
-        
-        return returnVal;
+//        LogDouble returnVal = new LogDouble();
+//        returnVal.logValue = logValue * d;
+//        
+//        return returnVal;
+        return new LogDouble(logValue * d, true);
     }
     
     @Override

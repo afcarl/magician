@@ -44,5 +44,19 @@ public class LogDoubleTest {
 						.divide(original_prob.add(flipped_prob))).getValue();
 		System.out.println("Gradient");
 		System.out.printf("%.10f\n", result);
+		
+		// Division
+		System.out.println("\nAddition Test:");
+		
+		LogDouble s = new LogDouble(898536d, true); // 898536.8394746337
+		LogDouble t = new LogDouble(899457d, true); // 899457.9940869209
+		System.out.println(s);
+		System.out.println(t);
+
+		System.out.println(t.divide(s).getValue() == Double.POSITIVE_INFINITY);
+
+		double zero_threshold = Math.exp(-100);
+		System.out.println(zero_threshold);
+		System.out.println(1/zero_threshold);
 	}
 }

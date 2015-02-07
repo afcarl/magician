@@ -1,6 +1,6 @@
 #domains
-dom1={0, ..., 1}
-dom2={0, ..., 1}
+dom1={0, ..., 100}
+dom2={0, ..., 1001}
 
 #predicates
 A(dom1, dom2)
