@@ -137,9 +137,7 @@ public class MLN {
 		int ind=0;
 		new_clause.atoms = new ArrayList<Atom>(clause.atoms.size());
 		for (int i = 0; i < clause.atoms.size(); i++) {
-			new_clause.atoms.add(new Atom());
-			new_clause.atoms.get(i).symbol = create_new_symbol(clause.atoms.get(i).symbol);
-			new_clause.atoms.get(i).terms = new ArrayList<Term>(clause.atoms.get(i).terms.size());
+			new_clause.atoms.add(new Atom(create_new_symbol(clause.atoms.get(i).symbol), new ArrayList<Term>(clause.atoms.get(i).terms.size())));
 			for (int j = 0; j < clause.atoms.get(i).terms.size(); j++) {
 				new_clause.atoms.get(i).terms.add(newTerms.get(ind));
 				ind++;

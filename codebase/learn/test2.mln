@@ -4,9 +4,6 @@ dom2={0, ..., 2}
 
 #predicates
 A(dom1, dom2)
-B(dom1, dom2)
 
 #formulas
-( B(t, c)) ::0
 ( A(s, c)) ::0
-( !B(t, c) | A(s, c)) ::0

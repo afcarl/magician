@@ -239,11 +239,13 @@ public class PseudoLogLikelihoodBasedLearning {
 //		String db_file = "love_mln_db.txt";
 //		String mln_file = "test.mln";
 //		String db_file = "test.db";
+		String mln_file = "test2.mln";
+		String db_file = "test2.db";
 //		String mln_file = "webkb-magician.mln";
 //		String db_file = "webkb-0.txt";
 		
-		String mln_file = args[0];
-		String db_file = args[1];
+//		String mln_file = args[0];
+//		String db_file = args[1];
 		
 		// Time
 		long startTime = System.nanoTime();

@@ -10,10 +10,6 @@ public class Atom {
 
 	// Conditions: terms.size()=symbol.variables.size() and
 	// terms[i].type=symbol.variables[i]
-	public Atom() {
-		terms = new ArrayList<Term>();
-	}
-
 	public Atom(PredicateSymbol symbol_, List<Term> terms_) {
 		symbol = (symbol_);
 		terms = (terms_);
