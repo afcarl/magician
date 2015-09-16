@@ -1,0 +1,15 @@
+#domains
+person={0, ..., 249}
+
+#predicates
+Smokes(person)
+Friends(person,person)
+Cancer(person)
+
+#formulas
+( !Smokes(x) | !Friends(x,y) | Smokes(y)) ::0
+( !Smokes(x) | Cancer(x)) ::0
+( Smokes(x)) ::0
+( Friends(x,y)) ::0
+( Cancer(x)) ::0
+

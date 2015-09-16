@@ -1,0 +1,87 @@
+#domains
+patient={0, ..., 647}
+
+#predicates
+AB0(patient)
+AB1(patient)
+AB2(patient)
+AB3(patient)
+AB4(patient)
+AB5(patient)
+Gravida0(patient)
+Gravida1(patient)
+Gravida2(patient)
+Gravida3(patient)
+Gravida4(patient)
+Gravida5(patient)
+Para0(patient)
+Para1(patient)
+Para2(patient)
+Para3(patient)
+Para4(patient)
+Para5(patient)
+Insurance0(patient)
+Insurance1(patient)
+Insurance2(patient)
+BMI0(patient)
+BMI1(patient)
+BMI2(patient)
+BMI3(patient)
+PrevC(patient)
+CSection(patient)
+
+
+#formulas
+( AB0(patient)) ::0
+( AB1(patient)) ::0
+( AB2(patient)) ::0
+( AB3(patient)) ::0
+( AB4(patient)) ::0
+( AB5(patient)) ::0
+( Gravida0(patient)) ::0
+( Gravida1(patient)) ::0
+( Gravida2(patient)) ::0
+( Gravida3(patient)) ::0
+( Gravida4(patient)) ::0
+( Gravida5(patient)) ::0
+( Para0(patient)) ::0
+( Para1(patient)) ::0
+( Para2(patient)) ::0
+( Para3(patient)) ::0
+( Para4(patient)) ::0
+( Para5(patient)) ::0
+( Insurance0(patient)) ::0
+( Insurance1(patient)) ::0
+( Insurance2(patient)) ::0
+( BMI0(patient)) ::0
+( BMI1(patient)) ::0
+( BMI2(patient)) ::0
+( BMI3(patient)) ::0
+( PrevC(patient)) ::0
+( CSection(patient)) ::0
+( !AB0(patient) | CSection(patient)) ::0
+( !AB1(patient) | CSection(patient)) ::0
+( !AB2(patient) | CSection(patient)) ::0
+( !AB3(patient) | CSection(patient)) ::0
+( !AB4(patient) | CSection(patient)) ::0
+( !AB5(patient) | CSection(patient)) ::0
+( !Gravida0(patient) | CSection(patient)) ::0
+( !Gravida1(patient) | CSection(patient)) ::0
+( !Gravida2(patient) | CSection(patient)) ::0
+( !Gravida3(patient) | CSection(patient)) ::0
+( !Gravida4(patient) | CSection(patient)) ::0
+( !Gravida5(patient) | CSection(patient)) ::0
+( !Para0(patient) | CSection(patient)) ::0
+( !Para1(patient) | CSection(patient)) ::0
+( !Para2(patient) | CSection(patient)) ::0
+( !Para3(patient) | CSection(patient)) ::0
+( !Para4(patient) | CSection(patient)) ::0
+( !Para5(patient) | CSection(patient)) ::0
+( !Insurance0(patient) | CSection(patient)) ::0
+( !Insurance1(patient) | CSection(patient)) ::0
+( !Insurance2(patient) | CSection(patient)) ::0
+( !BMI0(patient) | CSection(patient)) ::0
+( !BMI1(patient) | CSection(patient)) ::0
+( !BMI2(patient) | CSection(patient)) ::0
+( !BMI3(patient) | CSection(patient)) ::0
+( !PrevC(patient) | CSection(patient)) ::0
