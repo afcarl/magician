@@ -119,6 +119,9 @@ public class Variable implements Comparable<Variable> {
 			domainSize *= variable.getDomainSize();
 		}
 		
+		if(domainSize < 0)
+			return Integer.MAX_VALUE; // XXX: Hack! To detect underflow. Use Math.multiplyExact in Java 8
+		
 		return domainSize;
 	}
 	

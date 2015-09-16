@@ -36,6 +36,8 @@ public interface GroundStore {
 
 	public abstract Double noOfFalseGroundings(int clauseId);
 
+	public abstract Double noOfGroundings(int clauseId);
+
 	public abstract Double noOfFalseGroundingsIncreased(int clauseId);
 
 	public abstract void update();

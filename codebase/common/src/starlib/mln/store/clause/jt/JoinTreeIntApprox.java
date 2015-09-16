@@ -18,14 +18,19 @@ public class JoinTreeIntApprox extends JoinTreeInt {
 	public void reCalibrate(List<Integer> changedFunctionIds, int address) {
 		selfJoinCase = !selfJoinCase;
 		
-		double oldZ = super.getZ();
-		
-		double sumOfAllZs = 0;
-		for (Integer changedFunctionId : changedFunctionIds) {
-			sumOfAllZs += super.computeDeltaZ(changedFunctionId, address);
+		if(selfJoinCase) {
+			double oldZ = super.getZ();
+			
+			double sumOfAllZs = 0;
+			for (Integer changedFunctionId : changedFunctionIds) {
+				sumOfAllZs += super.computeDeltaZ(changedFunctionId, address);
+			}
+			
+			tempZ = oldZ + sumOfAllZs / changedFunctionIds.size();
+		} else {
+			// Called after unflip. Nothing to do
 		}
 		
-		tempZ = oldZ + sumOfAllZs / changedFunctionIds.size();
 	}
 	
 	@Override

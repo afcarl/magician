@@ -37,6 +37,8 @@ public class JoinTreeInt implements CompiledStructure {
 		return variables;
 	}
 	
+	protected JoinTreeInt() {}
+	
 	public JoinTreeInt(int id, List<IntFunction> functions)
 	{
 		this.id = id;

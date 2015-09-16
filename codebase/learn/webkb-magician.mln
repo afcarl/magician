@@ -14,69 +14,67 @@ HasWord(word, web)
 Linked(web, web)
 
 #formulas
-( !HasWord(w,p) | Course(p)) ::0
-( !HasWord(w,p) | Department(p)) ::0
-( !HasWord(w,p) | Person(p)) ::0
-( !HasWord(w,p) | Faculty(p)) ::0
-( !HasWord(w,p) | ResearchProject(p)) ::0
-( !HasWord(w,p) | Staff(p)) ::0
-( !HasWord(w,p) | Student(p)) ::0
-( !Course(x) | !Linked(x,y) | Course(y)) ::0
-( !Course(x) | !Linked(x,y) | Department(y)) ::0
-( !Course(x) | !Linked(x,y) | Person(y)) ::0
-( !Course(x) | !Linked(x,y) | Faculty(y)) ::0
-( !Course(x) | !Linked(x,y) | ResearchProject(y)) ::0
-( !Course(x) | !Linked(x,y) | Staff(y)) ::0
-( !Course(x) | !Linked(x,y) | Student(y)) ::0
-( !Department(x) | !Linked(x,y) | Course(y)) ::0
-( !Department(x) | !Linked(x,y) | Department(y)) ::0
-( !Department(x) | !Linked(x,y) | Person(y)) ::0
-( !Department(x) | !Linked(x,y) | Faculty(y)) ::0
-( !Department(x) | !Linked(x,y) | ResearchProject(y)) ::0
-( !Department(x) | !Linked(x,y) | Staff(y)) ::0
-( !Department(x) | !Linked(x,y) | Student(y)) ::0
-( !Person(x) | !Linked(x,y) | Course(y)) ::0
-( !Person(x) | !Linked(x,y) | Department(y)) ::0
-( !Person(x) | !Linked(x,y) | Person(y)) ::0
-( !Person(x) | !Linked(x,y) | Faculty(y)) ::0
-( !Person(x) | !Linked(x,y) | ResearchProject(y)) ::0
-( !Person(x) | !Linked(x,y) | Staff(y)) ::0
-( !Person(x) | !Linked(x,y) | Student(y)) ::0
-( !Faculty(x) | !Linked(x,y) | Course(y)) ::0
-( !Faculty(x) | !Linked(x,y) | Department(y)) ::0
-( !Faculty(x) | !Linked(x,y) | Person(y)) ::0
-( !Faculty(x) | !Linked(x,y) | Faculty(y)) ::0
-( !Faculty(x) | !Linked(x,y) | ResearchProject(y)) ::0
-( !Faculty(x) | !Linked(x,y) | Staff(y)) ::0
-( !Faculty(x) | !Linked(x,y) | Student(y)) ::0
-( !ResearchProject(x) | !Linked(x,y) | Course(y)) ::0
-( !ResearchProject(x) | !Linked(x,y) | Department(y)) ::0
-( !ResearchProject(x) | !Linked(x,y) | Person(y)) ::0
-( !ResearchProject(x) | !Linked(x,y) | Faculty(y)) ::0
-( !ResearchProject(x) | !Linked(x,y) | ResearchProject(y)) ::0
-( !ResearchProject(x) | !Linked(x,y) | Staff(y)) ::0
-( !ResearchProject(x) | !Linked(x,y) | Student(y)) ::0
-( !Staff(x) | !Linked(x,y) | Course(y)) ::0
-( !Staff(x) | !Linked(x,y) | Department(y)) ::0
-( !Staff(x) | !Linked(x,y) | Person(y)) ::0
-( !Staff(x) | !Linked(x,y) | Faculty(y)) ::0
-( !Staff(x) | !Linked(x,y) | ResearchProject(y)) ::0
-( !Staff(x) | !Linked(x,y) | Staff(y)) ::0
-( !Staff(x) | !Linked(x,y) | Student(y)) ::0
-( !Student(x) | !Linked(x,y) | Course(y)) ::0
-( !Student(x) | !Linked(x,y) | Department(y)) ::0
-( !Student(x) | !Linked(x,y) | Person(y)) ::0
-( !Student(x) | !Linked(x,y) | Faculty(y)) ::0
-( !Student(x) | !Linked(x,y) | ResearchProject(y)) ::0
-( !Student(x) | !Linked(x,y) | Staff(y)) ::0
-( !Student(x) | !Linked(x,y) | Student(y)) ::0
-( Course(x)) ::0
-( Department(x)) ::0
-( Person(x)) ::0
-( Faculty(x)) ::0
-( ResearchProject(x)) ::0
-( Staff(x)) ::0
-( Student(x)) ::0
-( HasWord(x,y)) ::0
-( Linked(x,y)) ::0
-( !Linked(x,y) | Linked(y,x)) ::0
+( !HasWord(w,p) | Course(p)) ::-2.868122839
+( !HasWord(w,p) | Department(p)) ::-3.701207584
+( !HasWord(w,p) | Person(p)) ::-1.786781559
+( !HasWord(w,p) | Faculty(p)) ::-3.220409788
+( !HasWord(w,p) | ResearchProject(p)) ::-3.964358289
+( !HasWord(w,p) | Staff(p)) ::-4.75610663
+( !HasWord(w,p) | Student(p)) ::-2.327760589
+( !Course(x) | !Linked(x,y) | Course(y)) ::2.722378596
+( !Course(x) | !Linked(x,y) | Department(y)) ::2.690200583
+( !Course(x) | !Linked(x,y) | Person(y)) ::2.78840401
+( !Course(x) | !Linked(x,y) | Faculty(y)) ::2.714528126
+( !Course(x) | !Linked(x,y) | ResearchProject(y)) ::2.66852422
+( !Course(x) | !Linked(x,y) | Staff(y)) ::2.66852422
+( !Course(x) | !Linked(x,y) | Student(y)) ::2.73028347
+( !Department(x) | !Linked(x,y) | Course(y)) ::3.379285813
+( !Department(x) | !Linked(x,y) | Department(y)) ::3.658032906
+( !Department(x) | !Linked(x,y) | Person(y)) ::3.561595353
+( !Department(x) | !Linked(x,y) | Faculty(y)) ::3.369116157
+( !Department(x) | !Linked(x,y) | ResearchProject(y)) ::3.365075177
+( !Department(x) | !Linked(x,y) | Staff(y)) ::3.365075177
+( !Department(x) | !Linked(x,y) | Student(y)) ::3.535245882
+( !Person(x) | !Linked(x,y) | Course(y)) ::1.906965617
+( !Person(x) | !Linked(x,y) | Department(y)) ::2.010335457
+( !Person(x) | !Linked(x,y) | Person(y)) ::1.934424713
+( !Person(x) | !Linked(x,y) | Faculty(y)) ::1.876657012
+( !Person(x) | !Linked(x,y) | ResearchProject(y)) ::1.886305037
+( !Person(x) | !Linked(x,y) | Staff(y)) ::1.832147202
+( !Person(x) | !Linked(x,y) | Student(y)) ::1.866515425
+( !Faculty(x) | !Linked(x,y) | Course(y)) ::3.695911125
+( !Faculty(x) | !Linked(x,y) | Department(y)) ::3.712571967
+( !Faculty(x) | !Linked(x,y) | Person(y)) ::3.647456317
+( !Faculty(x) | !Linked(x,y) | Faculty(y)) ::3.618906409
+( !Faculty(x) | !Linked(x,y) | ResearchProject(y)) ::3.658032906
+( !Faculty(x) | !Linked(x,y) | Staff(y)) ::3.578711237
+( !Faculty(x) | !Linked(x,y) | Student(y)) ::3.61125235
+( !ResearchProject(x) | !Linked(x,y) | Course(y)) ::3.761266749
+( !ResearchProject(x) | !Linked(x,y) | Department(y)) ::3.818511208
+( !ResearchProject(x) | !Linked(x,y) | Person(y)) ::4.011918063
+( !ResearchProject(x) | !Linked(x,y) | Faculty(y)) ::3.856350723
+( !ResearchProject(x) | !Linked(x,y) | ResearchProject(y)) ::3.818511208
+( !ResearchProject(x) | !Linked(x,y) | Staff(y)) ::3.781994243
+( !ResearchProject(x) | !Linked(x,y) | Student(y)) ::3.902304884
+( !Staff(x) | !Linked(x,y) | Course(y)) ::4.922542251
+( !Staff(x) | !Linked(x,y) | Department(y)) ::5.068707642
+( !Staff(x) | !Linked(x,y) | Person(y)) ::4.988140585
+( !Staff(x) | !Linked(x,y) | Faculty(y)) ::4.959505948
+( !Staff(x) | !Linked(x,y) | ResearchProject(y)) ::5.079244466
+( !Staff(x) | !Linked(x,y) | Staff(y)) ::4.950137979
+( !Staff(x) | !Linked(x,y) | Student(y)) ::4.922542251
+( !Student(x) | !Linked(x,y) | Course(y)) ::2.214490879
+( !Student(x) | !Linked(x,y) | Department(y)) ::2.312943407
+( !Student(x) | !Linked(x,y) | Person(y)) ::2.240435952
+( !Student(x) | !Linked(x,y) | Faculty(y)) ::2.181907699
+( !Student(x) | !Linked(x,y) | ResearchProject(y)) ::2.179052054
+( !Student(x) | !Linked(x,y) | Staff(y)) ::2.139047685
+( !Student(x) | !Linked(x,y) | Student(y)) ::2.183337964
+( !Linked(x,y) | Linked(y,x)) ::-20.37200478
+( Course(x)) ::3.041510387
+( Department(x)) ::3.527101723
+( Person(x)) ::1.750115509
+( Faculty(x)) ::3.535787536
+( ResearchProject(x)) ::4.20957425
+( Staff(x)) ::4.800640216
+( Student(x)) ::2.147057319

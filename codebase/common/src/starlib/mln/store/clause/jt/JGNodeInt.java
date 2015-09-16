@@ -64,6 +64,10 @@ public class JGNodeInt {
 	public int id() {
 		return id_;
 	}
+	
+	public void setId(int id_) {
+		this.id_ = id_;
+	}
 
 	public void delete() {
 		deleted_ = true;
@@ -106,7 +110,7 @@ public class JGNodeInt {
 		return function.isEmpty();
 	}
 	
-	private void updateVariables()
+	public void updateVariables()
 	{
 		List<IntFunction> all_functions = compileAllFunctions();
 		Set<Variable> union = new TreeSet<>();

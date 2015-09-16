@@ -16,19 +16,17 @@ public class IntFunction {
 	/**
 	 * The scope of the function. It is assumed that the variable list is sorted in ascending order
 	 */
-	public List<Variable> variables;
+	public List<Variable> variables = new ArrayList<>();
 	
 	public List<Integer> multipliers;
 	
-	protected double[] table;
-//	protected int[] change;
+	protected double[] table = new double[1]; // XXX: Hack: represents constant 
 	
 	protected double constantValue = 0;
 	
 	protected boolean negated = false;
 	
 	public IntFunction() {
-		
 	}
 	
 	public IntFunction(boolean negated) {
@@ -70,9 +68,6 @@ public class IntFunction {
 
 	public void setTable(double[] table) {
 		this.table = table;
-//		if(change == null)
-//			change = new int[table.length];
-//		else Arrays.fill(change, 0);
 	}
 	
 	public double getTableEntry(int address) {
@@ -104,7 +99,7 @@ public class IntFunction {
 	public void setConstantValue(double constantValue) {
 		this.constantValue = constantValue;
 		variables.clear();
-		table = null;
+//		table = null;
 	}
 	
 	public boolean isNegated() {

@@ -401,13 +401,15 @@ public class Parser {
 			}
 			
 			if(predicateSymbolIndex < 0) {
-				System.out.println("Error! Predicate in DB file not found: "  + predicateName );
-				System.exit(-1);
+				System.err.println("Error! Predicate in DB file not found: "  + predicateName + ", skipping it");
+				continue;
+//				System.exit(-1);
 			}
 
 			if(terms.length > mln.getSymbol(predicateSymbolIndex).variable_types.size()) {
-				System.out.println("Error! Wrong terms in Predicate in DB file: "  + predicateName );
-				System.exit(-1);
+				System.err.println("Error! Wrong terms in Predicate in DB file: "  + predicateName + ", skipping it" );
+				continue;
+//				System.exit(-1);
 			}
 			
 			// Check each terms Validity

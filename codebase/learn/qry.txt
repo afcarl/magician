@@ -1,7 +1,1 @@
-Course
-Department
-Person
-Faculty
-ResearchProject
-Staff
-Student
+Cancer

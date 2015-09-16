@@ -317,13 +317,18 @@ public class GraphModBasedGroundStore<E extends CompiledStructure> implements Gr
 	
 	@Override
 	public Double noOfTrueGroundings(int clauseId) {
-		return (double) satCounts[clauseId];
+		return satCounts[clauseId];
 	}
 
 	
 	@Override
 	public Double noOfFalseGroundings(int clauseId) {
-		return (double) (totalCounts[clauseId] - satCounts[clauseId]);
+		return totalCounts[clauseId] - satCounts[clauseId];
+	}
+
+	@Override
+	public Double noOfGroundings(int clauseId) {
+		return totalCounts[clauseId];
 	}
 
 	@Override

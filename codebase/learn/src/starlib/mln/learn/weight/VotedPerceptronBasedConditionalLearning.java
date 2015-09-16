@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
 
@@ -18,7 +20,7 @@ import starlib.mln.store.GroundStoreFactory;
 
 public class VotedPerceptronBasedConditionalLearning {
 	
-	private static double learning_rate = 0.1;
+	private static double learning_rate = 1;
 	
 	private static double initial_weight = 0.0001;
 	
@@ -26,7 +28,13 @@ public class VotedPerceptronBasedConditionalLearning {
 	
 	private static int weightUpdateFrequency = 80;
 	
+	private static double weightChangeThresold = 0.0001; // 0.01% change
+	
+	private static double INFINITE_WEIGHT = 50; 
+	
 	private long timeOut = Long.MAX_VALUE;
+	
+	private static int maxWalkSatTimeOut = Integer.MAX_VALUE;
 	
 	private GroundStore store;
 	
@@ -42,20 +50,30 @@ public class VotedPerceptronBasedConditionalLearning {
 	
 	private double[] weights;
 	
+	private double[] averageWeights;
+	
+	private double maxPctDelta;
+	
 	private static boolean[] isQuerySymbol;
 	
 	private int sampleSize;
 	
 	private int weightUpdateCount = 1;
 	
+	private boolean weightsConverged = false;
+	
 	private static boolean isFirstRun = true;
 	
 	private long startTime;
 	private long endTime;
 	
+	private int iteration = 0;
+	private Calendar cal = Calendar.getInstance();
+	private SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+	
 	public VotedPerceptronBasedConditionalLearning(String mlnFile, String dbFile, String queryFile) throws FileNotFoundException {
 		startTime = System.currentTimeMillis();
-		store = GroundStoreFactory.createGraphModBasedGroundStore(mlnFile, dbFile);
+		store = GroundStoreFactory.createGraphModBasedGroundStoreWithApproxCount(mlnFile, dbFile);
 		mln = store.getMln();
 		endTime = System.currentTimeMillis();
 		System.out.println("Ground store created in : "  + (endTime - startTime) + " ms");
@@ -65,9 +83,8 @@ public class VotedPerceptronBasedConditionalLearning {
 		expectedCounts = new double[noOfClauses];
 		bestCounts     = new double[noOfClauses];
 		weights        = new double[noOfClauses];
+		averageWeights = new double[noOfClauses];
 		isQuerySymbol = new boolean[noOfClauses];
-		
-		Arrays.fill(weights, initial_weight); // Initialize weights to some small weight
 		
 		startTime = System.currentTimeMillis();
 		Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(new FileInputStream(queryFile))));
@@ -89,10 +106,18 @@ public class VotedPerceptronBasedConditionalLearning {
 					break;
 				}
 			}
-			isQuerySymbol[predicateSymbolIndex] = true;
+			if(predicateSymbolIndex > -1)
+				isQuerySymbol[predicateSymbolIndex] = true;
 		}
 		endTime = System.currentTimeMillis();
 		System.out.println("Query File processed in : "  + (endTime - startTime) + " ms");
+	}
+	
+	private void initWeights() {
+		for (int i = 0; i < noOfClauses; i++) {
+//			weights[i] = learning_rate * ((originalCounts[i] + initial_weight) / store.noOfGroundings(i)); 
+			weights[i] = mln.getClause(i).weight.getLogValue() + initial_weight; 
+		}
 	}
 	
 	private void computeExpectedCounts() {
@@ -103,6 +128,7 @@ public class VotedPerceptronBasedConditionalLearning {
 	}
 	
 	private void updateWeights() {
+		maxPctDelta = 0;
 		for (int i = 0; i < noOfClauses; i++) {
 			double originalCount = originalCounts[i];
 			double expectedCount = (sampleSize > 0) ? 
@@ -110,8 +136,26 @@ public class VotedPerceptronBasedConditionalLearning {
 					: bestCounts[i];
 			double cluaseWiseLearningRate = learning_rate / (1 + originalCount);
 			
-			weights[i] = weights[i] + cluaseWiseLearningRate * (originalCount - expectedCount) / weightUpdateCount;
+			double deltaWeight = cluaseWiseLearningRate * (originalCount - expectedCount);
+			double newWeight = weights[i] + deltaWeight;
+			
+			if(Math.abs(newWeight) > INFINITE_WEIGHT) {
+				newWeight = Math.signum(newWeight) * INFINITE_WEIGHT;
+				deltaWeight = 0;
+			}
+			weights[i] = newWeight;
+			averageWeights[i] += newWeight;
+			
+			double pctDelta = Math.abs(deltaWeight / weights[i]);
+			if(pctDelta > maxPctDelta) {
+				maxPctDelta = pctDelta;
+			}
 		}
+		
+		if(maxPctDelta < weightChangeThresold) {
+			weightsConverged = true;
+		}
+		
 		weightUpdateCount++;
 		
 		Arrays.fill(expectedCounts, 0);
@@ -120,13 +164,31 @@ public class VotedPerceptronBasedConditionalLearning {
 	
 	private void printCurrentWeights() {
 		System.out.println();
+		printCurrentTime();
+		System.out.println("Weights after " + weightUpdateCount + " updates -");
 		for (int i = 0; i < noOfClauses; i++) {
 			System.out.println(weights[i]);
 		}
 		System.out.println();
+		System.out.println();
+		System.out.println("Averaged weights after iteration : " + iteration);
+		for (int i = 0; i < noOfClauses; i++) {
+			System.out.printf("%.5f %n", averageWeights[i]/weightUpdateCount);
+		}
+		System.out.println();
+		System.out.printf("Maximum percentage weight change is: %.2f %% %n", (maxPctDelta*100));
+		if(weightsConverged)
+			System.out.println("Weights has converged!!");
+	}
+	
+	private void printCurrentTime() {
+		System.out.println("Current time is: "+ sdf.format(cal.getTime()) );
 	}
 	
 	public void run() {
+		
+		printCurrentTime();
+		
 		startTime = System.currentTimeMillis();
 		store.update();
 		endTime = System.currentTimeMillis();
@@ -136,10 +198,13 @@ public class VotedPerceptronBasedConditionalLearning {
 			originalCounts[i] = store.noOfTrueGroundings(i);
 		}
 		
+		initWeights();
+		
 		QueryAwareWalkSat walkSat = new QueryAwareWalkSat(store, this);
 		
 		long clockStartTime = System.currentTimeMillis();
-		while(true) {
+		while(!weightsConverged) {
+			iteration++;
 			walkSat.run();
 			this.updateWeights();
 			this.printCurrentWeights();
@@ -151,22 +216,26 @@ public class VotedPerceptronBasedConditionalLearning {
 				break;
 			}
 		}
-		
+		long currentTime = System.currentTimeMillis();
+		System.out.println("Weightes converged in  " + (currentTime - clockStartTime)/1000 +" seconds.");
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException {
 //		String mlnFile = "webkb-magician.mln";
 //		String dbFile =  "webkb-0.txt";
-//		String queryFile = "qry.txt";
-//		long timeOut = 360;
+//		String queryFile = "webkb_qry.txt";
+//		long timeOut = 600;
+//		int maxWalkSatTimeOut = 200;
 		
 		String mlnFile = args[0];
 		String dbFile =  args[1];
 		String queryFile = args[2];
 		long timeOut = Long.parseLong(args[3]);
+		int maxWalkSatTimeOut = Integer.parseInt(args[4]);
 		
 		VotedPerceptronBasedConditionalLearning learningAlgo = new VotedPerceptronBasedConditionalLearning(mlnFile, dbFile, queryFile);
 		learningAlgo.timeOut = timeOut*1000;
+		VotedPerceptronBasedConditionalLearning.maxWalkSatTimeOut = maxWalkSatTimeOut*1000;
 		learningAlgo.run();
 	}
 	
@@ -180,10 +249,10 @@ public class VotedPerceptronBasedConditionalLearning {
 		}
 		
 		private void setUpParams() {
-			maxSteps = 10000;
+			maxSteps = 100000;
 			p = 0.6;
 			randomClauseProb = 0.2;
-			timeOut = 300*1000;
+			timeOut = maxWalkSatTimeOut;
 			print = false;
 		}
 		
